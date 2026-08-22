@@ -32,7 +32,9 @@ export default function SharedItinerary() {
     <div>
       <div className="relative bg-gray-900 h-64 sm:h-80">
         {trip.cover_photo_url && (
-          <img src={trip.cover_photo_url} alt={trip.name} className="w-full h-full object-cover opacity-60" onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/1200x400?text=Cover' }} />
+          <img src={trip.cover_photo_url} alt={trip.name} className="w-full h-full object-cover opacity-60" onError={(e) => { 
+            (e.target as HTMLImageElement).src = 'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%221200%22%20height%3D%22400%22%20viewBox%3D%220%200%201200%20400%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22grad1%22%20x1%3D%220%25%22%20y1%3D%220%25%22%20x2%3D%22100%25%22%20y2%3D%22100%25%22%3E%3Cstop%20offset%3D%220%25%22%20style%3D%22stop-color%3A%23334155%3Bstop-opacity%3A1%22%20%2F%3E%3Cstop%20offset%3D%22100%25%22%20style%3D%22stop-color%3A%230f172a%3Bstop-opacity%3A1%22%20%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%221200%22%20height%3D%22400%22%20fill%3D%22url(%23grad1)%22%20%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20fill%3D%22%2364748b%22%20font-family%3D%22sans-serif%22%20font-size%3D%2224%22%20font-weight%3D%22bold%22%3EDestination%20Cover%3C%2Ftext%3E%3C%2Fsvg%3E';
+          }} />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/40" />
         <div className="absolute bottom-0 left-0 right-0 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
@@ -85,9 +87,11 @@ export default function SharedItinerary() {
                 ) : (
                   <ul className="divide-y divide-gray-200">
                     {stop.activities.map((tripActivity: any) => (
-                      <li key={tripActivity.id} className="py-4 flex">
-                        <img className="h-16 w-16 rounded object-cover bg-gray-100" src={tripActivity.activity.image_url} alt="" onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/100x100?text=N/A' }} />
-                        <div className="ml-4 flex-1">
+                      <li key={tripActivity.id} className="flex gap-4 py-4">
+                        <img className="h-16 w-16 rounded object-cover bg-gray-100" src={tripActivity.activity.image_url} alt="" onError={(e) => { 
+                          (e.target as HTMLImageElement).src = 'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22100%22%20height%3D%22100%22%20viewBox%3D%220%200%20100%20100%22%3E%3Crect%20width%3D%22100%22%20height%3D%22100%22%20fill%3D%22%23f3f4f6%22%20%2F%3E%3Cpath%20d%3D%22M30%2070L70%2030M30%2030L70%2070%22%20stroke%3D%22%239ca3af%22%20stroke-width%3D%228%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E';
+                        }} />
+                        <div className="flex-1">
                           <p className="text-sm font-medium text-gray-900">{tripActivity.activity.name}</p>
                           <div className="flex items-center mt-1">
                             <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">

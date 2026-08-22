@@ -7,6 +7,8 @@ import tripRoutes from './routes/tripRoutes';
 import cityRoutes from './routes/cityRoutes';
 import activityRoutes from './routes/activityRoutes';
 import adminRoutes from './routes/adminRoutes';
+import communityRoutes from './routes/communityRoutes';
+import badgeRoutes from './routes/badgeRoutes';
 
 dotenv.config();
 
@@ -31,6 +33,8 @@ app.use('/api/trips', tripRoutes);
 app.use('/api/cities', cityRoutes);
 app.use('/api/activities', activityRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/community', communityRoutes);
+app.use('/api/badges', badgeRoutes);
 
 // Global Error Handler
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {

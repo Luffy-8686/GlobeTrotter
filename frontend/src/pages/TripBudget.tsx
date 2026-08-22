@@ -3,8 +3,10 @@ import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import { Pie, Bar } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title } from 'chart.js';
-import { ArrowLeft, DollarSign, AlertTriangle, Plus, Trash2, Edit2 } from 'lucide-react';
+import { ArrowLeft, Wallet, AlertTriangle, Plus, Trash2, Edit2 } from 'lucide-react';
 import { toast } from 'react-toastify';
+import { getLocalCurrencyInfo, formatINR } from '../utils/currency';
+import SplitExpenses from '../components/SplitExpenses';
 
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title);
 
@@ -38,7 +40,7 @@ export default function TripBudget() {
     try {
       await axios.post(`http://localhost:5000/api/trips/${id}/budget`, {
         category: newItem.category,
-        amount: parseFloat(newItem.amount),
+        amount: parseFloat(newItem.amount) / 83.3,
         date: newItem.date ? new Date(newItem.date).toISOString() : undefined
       });
       toast.success("Budget item added");
@@ -140,7 +142,7 @@ export default function TripBudget() {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Amount ($)</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Amount (₹)</label>
             <input 
               type="number" step="0.01" min="0" required 
               className="rounded-lg border-slate-300 py-2 px-3 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm w-32"
@@ -166,15 +168,17 @@ export default function TripBudget() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
           <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-2">Total Estimated Cost</h2>
-          <div className="flex items-end gap-2">
-             <span className="text-4xl font-bold text-slate-900">${total.toFixed(2)}</span>
-             <span className="text-sm text-slate-500 mb-1">USD</span>
+          <div className="flex flex-col gap-1">
+             <span className="text-4xl font-bold text-slate-900">{formatINR(total)}</span>
+             <span className="text-sm font-medium text-emerald-600">
+               {trip.stops?.[0]?.city?.country && getLocalCurrencyInfo(total, trip.stops[0].city.country)}
+             </span>
           </div>
         </div>
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
           <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-2">Daily Average</h2>
           <div className="flex items-end gap-2">
-             <span className="text-4xl font-bold text-slate-900">${perDayAverage.toFixed(2)}</span>
+             <span className="text-4xl font-bold text-slate-900">{formatINR(perDayAverage)}</span>
              <span className="text-sm text-slate-500 mb-1">/ day</span>
           </div>
         </div>
@@ -186,22 +190,24 @@ export default function TripBudget() {
              <div className="flex items-start gap-3">
                <AlertTriangle className="h-6 w-6 text-amber-600 flex-shrink-0 mt-0.5" />
                <p className="text-sm text-amber-800 font-medium">
-                 Your daily average (${perDayAverage.toFixed(0)}) exceeds your threshold of ${dailyThreshold}. Consider adjusting your itinerary.
+                 Your daily average ({formatINR(perDayAverage)}) exceeds your threshold of {formatINR(dailyThreshold)}. Consider adjusting your itinerary.
                </p>
              </div>
            ) : (
              <p className="text-sm text-emerald-800 font-medium">
-               Your trip looks great! Your average daily spending is well balanced below ${dailyThreshold}.
+               Your trip looks great! Your average daily spending is well balanced below {formatINR(dailyThreshold)}.
              </p>
            )}
         </div>
       </div>
 
-      {total === 0 ? (
-        <div className="text-center bg-white rounded-2xl shadow-sm border border-slate-200 py-16 px-4">
-          <DollarSign className="mx-auto h-12 w-12 text-slate-300 mb-4" />
-          <h3 className="text-lg font-bold text-slate-900">No expenses logged yet</h3>
-          <p className="mt-2 text-sm text-slate-500">Add stops and activities to auto-generate a budget, or add custom expenses manually.</p>
+      <SplitExpenses tripId={id as string} />
+
+        {trip.budget_items?.length === 0 ? (
+          <div className="text-center py-12 bg-white rounded-2xl shadow-sm border border-slate-200 mt-8">
+            <Wallet className="mx-auto h-12 w-12 text-slate-300 mb-4" />
+            <h3 className="text-lg font-medium text-slate-900 mb-1">No budget items yet</h3>
+            <p className="text-slate-500 mb-4">Add your first expense to start tracking your budget, or add custom expenses manually.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -214,7 +220,7 @@ export default function TripBudget() {
               {Object.entries(categories).map(([cat, amount]) => (
                 <li key={cat} className="py-3 flex justify-between items-center">
                   <span className="text-slate-600 capitalize font-medium">{cat}</span>
-                  <span className="font-bold text-slate-900">${amount.toFixed(2)}</span>
+                  <span className="font-bold text-slate-900">{formatINR(amount as number)}</span>
                 </li>
               ))}
             </ul>
@@ -234,7 +240,12 @@ export default function TripBudget() {
                     )}
                   </div>
                   <div className="flex items-center gap-4">
-                    <span className="font-bold text-slate-900">${item.amount.toFixed(2)}</span>
+                    <div className="flex flex-col text-right">
+                       <span className="font-bold text-slate-900">{formatINR(item.amount)}</span>
+                       <span className="text-xs font-medium text-emerald-600">
+                         {trip.stops?.[0]?.city?.country && getLocalCurrencyInfo(item.amount, trip.stops[0].city.country).split(' ')[1]}
+                       </span>
+                    </div>
                     <button 
                       onClick={() => handleDeleteItem(item.id)}
                       className="p-1.5 text-slate-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-all rounded-md hover:bg-red-50"

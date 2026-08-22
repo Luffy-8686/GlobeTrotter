@@ -13,9 +13,28 @@ enum Role {
   ADMIN
 }
 
+enum SectionType {
+  TRAVEL
+  STAY
+  ACTIVITY
+  OTHER
+}
+
+enum SplitType {
+  NONE
+  EQUAL
+  CUSTOM
+}
+
 model User {
   id                 String             @id @default(uuid())
   name               String
+  first_name         String?
+  last_name          String?
+  phone              String?
+  city               String?
+  country            String?
+  additional_info    String?
   email              String             @unique
   password_hash      String
   role               Role               @default(USER)
@@ -25,6 +44,9 @@ model User {
   
   trips              Trip[]
   saved_destinations SavedDestination[]
+  community_posts    CommunityPost[]
+  trip_participants  TripParticipant[]
+  user_badges        UserBadge[]
 }
 
 model Trip {
@@ -37,27 +59,34 @@ model Trip {
   cover_photo_url String?
   is_public       Boolean      @default(false)
   share_slug      String?      @unique
+  split_type      SplitType    @default(NONE)
   created_at      DateTime     @default(now())
   updated_at      DateTime     @updatedAt
 
   user            User         @relation(fields: [user_id], references: [id], onDelete: Cascade)
   stops           Stop[]
   budget_items    BudgetItem[]
+  community_posts CommunityPost[]
+  participants    TripParticipant[]
+  shares          SplitShare[]
+  user_badges     UserBadge[]
   
   @@index([user_id])
 }
 
 model Stop {
-  id          String         @id @default(uuid())
-  trip_id     String
-  city_id     String
-  start_date  DateTime
-  end_date    DateTime
-  order_index Int            @default(0)
+  id             String         @id @default(uuid())
+  trip_id        String
+  city_id        String
+  start_date     DateTime
+  end_date       DateTime
+  order_index    Int            @default(0)
+  section_type   SectionType    @default(OTHER)
+  section_budget Float?
 
-  trip        Trip           @relation(fields: [trip_id], references: [id], onDelete: Cascade)
-  city        City           @relation(fields: [city_id], references: [id], onDelete: Restrict)
-  activities  TripActivity[]
+  trip           Trip           @relation(fields: [trip_id], references: [id], onDelete: Cascade)
+  city           City           @relation(fields: [city_id], references: [id], onDelete: Restrict)
+  activities     TripActivity[]
 
   @@index([trip_id])
   @@index([city_id])
@@ -75,6 +104,7 @@ model City {
   stops              Stop[]
   activities         Activity[]
   saved_destinations SavedDestination[]
+  badge              Badge?
 }
 
 model Activity {
@@ -89,6 +119,7 @@ model Activity {
 
   city             City           @relation(fields: [city_id], references: [id], onDelete: Cascade)
   trip_activities  TripActivity[]
+  community_posts  CommunityPost[]
   
   @@index([city_id])
 }
@@ -129,4 +160,81 @@ model SavedDestination {
   city     City   @relation(fields: [city_id], references: [id], onDelete: Cascade)
 
   @@unique([user_id, city_id])
+}
+
+model CommunityPost {
+  id          String    @id @default(uuid())
+  user_id     String
+  trip_id     String?
+  activity_id String?
+  content     String
+  image_url   String?
+  created_at  DateTime  @default(now())
+
+  user        User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  trip        Trip?     @relation(fields: [trip_id], references: [id], onDelete: SetNull)
+  activity    Activity? @relation(fields: [activity_id], references: [id], onDelete: SetNull)
+
+  @@index([user_id])
+  @@index([trip_id])
+  @@index([activity_id])
+}
+
+model TripParticipant {
+  id         String   @id @default(uuid())
+  trip_id    String
+  user_id    String?
+  name       String
+  email      String?
+  created_at DateTime @default(now())
+
+  trip       Trip     @relation(fields: [trip_id], references: [id], onDelete: Cascade)
+  user       User?    @relation(fields: [user_id], references: [id], onDelete: SetNull)
+  shares     SplitShare[]
+
+  @@index([trip_id])
+  @@index([user_id])
+}
+
+model SplitShare {
+  id               String   @id @default(uuid())
+  trip_id          String
+  participant_id   String
+  share_percentage Float    @default(0) // Used if split_type = CUSTOM
+  amount_paid      Float    @default(0)
+
+  trip             Trip     @relation(fields: [trip_id], references: [id], onDelete: Cascade)
+  participant      TripParticipant @relation(fields: [participant_id], references: [id], onDelete: Cascade)
+
+  @@index([trip_id])
+  @@index([participant_id])
+}
+
+model Badge {
+  id          String   @id @default(uuid())
+  name        String
+  description String
+  icon_url    String
+  city_id     String   @unique
+  created_at  DateTime @default(now())
+
+  city        City     @relation(fields: [city_id], references: [id], onDelete: Cascade)
+  user_badges UserBadge[]
+}
+
+model UserBadge {
+  id          String   @id @default(uuid())
+  user_id     String
+  badge_id    String
+  trip_id     String
+  earned_at   DateTime @default(now())
+
+  user        User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  badge       Badge    @relation(fields: [badge_id], references: [id], onDelete: Cascade)
+  trip        Trip     @relation(fields: [trip_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, badge_id])
+  @@index([user_id])
+  @@index([badge_id])
+  @@index([trip_id])
 }

@@ -13,6 +13,7 @@ export default function Navbar() {
   const navLinks = [
     { name: 'Dashboard', path: '/dashboard' },
     { name: 'My Trips', path: '/trips' },
+    { name: 'Community', path: '/community' },
   ];
 
   if (user?.role === 'ADMIN') {

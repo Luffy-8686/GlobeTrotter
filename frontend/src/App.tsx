@@ -8,7 +8,8 @@ import 'react-toastify/dist/ReactToastify.css';
 import Navbar from './components/Navbar';
 
 // Pages
-import LoginSignup from './pages/LoginSignup';
+import Login from './pages/Login';
+import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import CreateTrip from './pages/CreateTrip';
 import MyTrips from './pages/MyTrips';
@@ -21,6 +22,8 @@ import TripCalendar from './pages/TripCalendar';
 import SharedItinerary from './pages/SharedItinerary';
 import UserProfile from './pages/UserProfile';
 import AdminDashboard from './pages/AdminDashboard';
+import CommunityTab from './pages/CommunityTab';
+import MyTripsCalendar from './pages/MyTripsCalendar';
 
 const ProtectedRoute = ({ children, requireAdmin = false }: { children: JSX.Element, requireAdmin?: boolean }) => {
   const { user, loading } = useAuth();
@@ -43,12 +46,15 @@ function App() {
       <div className="min-h-screen bg-gray-50 pb-10">
         <Routes>
           <Route path="/" element={user ? <Navigate to="/dashboard" /> : <Navigate to="/login" />} />
-          <Route path="/login" element={!user ? <LoginSignup /> : <Navigate to="/dashboard" />} />
+          <Route path="/login" element={!user ? <Login /> : <Navigate to="/dashboard" />} />
+          <Route path="/register" element={!user ? <Register /> : <Navigate to="/dashboard" />} />
           <Route path="/shared/:slug" element={<SharedItinerary />} />
           
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/create-trip" element={<ProtectedRoute><CreateTrip /></ProtectedRoute>} />
           <Route path="/trips" element={<ProtectedRoute><MyTrips /></ProtectedRoute>} />
+          <Route path="/calendar" element={<ProtectedRoute><MyTripsCalendar /></ProtectedRoute>} />
+          <Route path="/community" element={<ProtectedRoute><CommunityTab /></ProtectedRoute>} />
           <Route path="/trips/:id/build" element={<ProtectedRoute><ItineraryBuilder /></ProtectedRoute>} />
           <Route path="/trips/:id" element={<ProtectedRoute><ItineraryView /></ProtectedRoute>} />
           <Route path="/trips/:id/cities" element={<ProtectedRoute><CitySearch /></ProtectedRoute>} />

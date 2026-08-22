@@ -6,6 +6,7 @@ import { Map, Calendar, Plus, Clock, ExternalLink, DollarSign, ArrowRight, Share
 import { toast } from 'react-toastify';
 import { useReactToPrint } from 'react-to-print';
 import TripPDFDocument from '../components/TripPDFDocument';
+import { getLocalCurrencyInfo, formatINR } from '../utils/currency';
 
 export default function ItineraryView() {
   const { id } = useParams<{ id: string }>();
@@ -55,7 +56,9 @@ export default function ItineraryView() {
     try {
       await axios.put(`http://localhost:5000/api/trips/${id}/stops/${stopId}`, {
         start_date: new Date(stopDates.start_date).toISOString(),
-        end_date: new Date(stopDates.end_date).toISOString()
+        end_date: new Date(stopDates.end_date).toISOString(),
+        section_type: (stopDates as any).section_type,
+        section_budget: (stopDates as any).section_budget ? (stopDates as any).section_budget / 83.3 : undefined
       });
       toast.success('Dates updated');
       setEditingStop(null);
@@ -119,7 +122,9 @@ export default function ItineraryView() {
             src={trip.cover_photo_url}
             alt={trip.name}
             className="w-full h-full object-cover opacity-60"
-            onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/1200x400?text=Cover' }}
+            onError={(e) => { 
+              (e.target as HTMLImageElement).src = 'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%221200%22%20height%3D%22400%22%20viewBox%3D%220%200%201200%20400%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22grad1%22%20x1%3D%220%25%22%20y1%3D%220%25%22%20x2%3D%22100%25%22%20y2%3D%22100%25%22%3E%3Cstop%20offset%3D%220%25%22%20style%3D%22stop-color%3A%23334155%3Bstop-opacity%3A1%22%20%2F%3E%3Cstop%20offset%3D%22100%25%22%20style%3D%22stop-color%3A%230f172a%3Bstop-opacity%3A1%22%20%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%221200%22%20height%3D%22400%22%20fill%3D%22url(%23grad1)%22%20%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20fill%3D%22%2364748b%22%20font-family%3D%22sans-serif%22%20font-size%3D%2224%22%20font-weight%3D%22bold%22%3EDestination%20Cover%3C%2Ftext%3E%3C%2Fsvg%3E';
+            }}
           />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40" />
@@ -161,7 +166,7 @@ export default function ItineraryView() {
             className="inline-flex items-center px-4 py-2 border border-transparent rounded-xl shadow-sm text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-all hover:-translate-y-0.5"
           >
             <Plus className="-ml-1 mr-2 h-5 w-5" />
-            Add Destination
+            Add another Section
           </Link>
         </div>
 
@@ -170,8 +175,8 @@ export default function ItineraryView() {
           {trip.stops?.length === 0 ? (
             <div className="text-center py-12 relative z-10 bg-white border border-slate-200 shadow-sm rounded-2xl">
               <MapPin className="mx-auto h-12 w-12 text-slate-300 mb-4" />
-              <h3 className="text-lg font-bold text-slate-900">No destinations yet</h3>
-              <p className="mt-2 text-sm text-slate-500">Start building your itinerary by adding your first stop.</p>
+              <h3 className="text-lg font-bold text-slate-900">No sections yet</h3>
+              <p className="mt-2 text-sm text-slate-500">Start building your itinerary by adding your first section.</p>
             </div>
           ) : (
             trip.stops?.map((stop: any, index: number) => (
@@ -198,51 +203,90 @@ export default function ItineraryView() {
                         <button 
                           onClick={() => handleDeleteStop(stop.id)}
                           className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                          title="Delete destination"
+                          title="Delete section"
                         >
                           <Trash2 className="h-4 w-4" />
                         </button>
                       </div>
 
                       <div>
-                        <h3 className="text-xl font-bold text-slate-900 flex items-center pr-12">
-                          <span className="md:hidden inline-flex items-center justify-center w-6 h-6 mr-2 rounded-full bg-indigo-100 text-indigo-600 text-xs font-bold">{index + 1}</span>
-                          {stop.city.name}, {stop.city.country}
-                        </h3>
+                        <div className="flex items-center justify-between pr-12">
+                           <h3 className="text-xl font-bold text-slate-900 flex items-center">
+                             <span className="md:hidden inline-flex items-center justify-center w-6 h-6 mr-2 rounded-full bg-indigo-100 text-indigo-600 text-xs font-bold">{index + 1}</span>
+                             {stop.city.name}, {stop.city.country}
+                           </h3>
+                           <span className="text-xs font-semibold px-2 py-1 bg-slate-200 text-slate-700 rounded uppercase">{stop.section_type}</span>
+                        </div>
                         
                         {editingStop === stop.id ? (
-                          <div className="mt-3 flex flex-wrap gap-2 items-center bg-white p-2 rounded-lg border border-indigo-100">
-                            <input 
-                              type="date" 
-                              value={stopDates.start_date}
-                              onChange={e => setStopDates({...stopDates, start_date: e.target.value})}
-                              className="text-xs border-slate-300 rounded focus:ring-indigo-500 py-1"
-                            />
-                            <span className="text-slate-400 text-xs">to</span>
-                            <input 
-                              type="date" 
-                              value={stopDates.end_date}
-                              min={stopDates.start_date}
-                              onChange={e => setStopDates({...stopDates, end_date: e.target.value})}
-                              className="text-xs border-slate-300 rounded focus:ring-indigo-500 py-1"
-                            />
-                            <div className="flex gap-1 ml-auto">
-                              <button onClick={() => handleUpdateStopDates(stop.id)} className="p-1 bg-indigo-100 text-indigo-700 rounded hover:bg-indigo-200"><Check className="h-3 w-3" /></button>
-                              <button onClick={() => setEditingStop(null)} className="p-1 bg-slate-100 text-slate-600 rounded hover:bg-slate-200"><X className="h-3 w-3" /></button>
+                          <div className="mt-3 flex flex-col gap-2 bg-white p-3 rounded-lg border border-indigo-100 shadow-sm">
+                            <div className="flex flex-wrap gap-2 items-center">
+                              <input 
+                                type="date" 
+                                value={stopDates.start_date}
+                                onChange={e => setStopDates({...stopDates, start_date: e.target.value})}
+                                className="text-xs border-slate-300 rounded focus:ring-indigo-500 py-1"
+                              />
+                              <span className="text-slate-400 text-xs">to</span>
+                              <input 
+                                type="date" 
+                                value={stopDates.end_date}
+                                min={stopDates.start_date}
+                                onChange={e => setStopDates({...stopDates, end_date: e.target.value})}
+                                className="text-xs border-slate-300 rounded focus:ring-indigo-500 py-1"
+                              />
+                            </div>
+                            <div className="flex flex-wrap gap-2 items-center">
+                              <select 
+                                value={(stopDates as any).section_type || stop.section_type}
+                                onChange={e => setStopDates({...stopDates, section_type: e.target.value} as any)}
+                                className="text-xs border-slate-300 rounded focus:ring-indigo-500 py-1"
+                              >
+                                <option value="TRAVEL">Travel</option>
+                                <option value="STAY">Stay</option>
+                                <option value="ACTIVITY">Activity</option>
+                                <option value="OTHER">Other</option>
+                              </select>
+                              <div className="relative">
+                                <div className="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none text-slate-400 font-bold text-xs">
+                                  ₹
+                                </div>
+                                <input 
+                                  type="number" 
+                                  placeholder="Budget"
+                                  value={(stopDates as any).section_budget !== undefined 
+                                          ? (stopDates as any).section_budget 
+                                          : (stop.section_budget ? Math.round(stop.section_budget * 83.3) : '')}
+                                  onChange={e => setStopDates({...stopDates, section_budget: parseFloat(e.target.value)} as any)}
+                                  className="text-xs pl-6 border-slate-300 rounded focus:ring-indigo-500 py-1 w-24"
+                                />
+                              </div>
+                            </div>
+                            <div className="flex gap-1 ml-auto mt-2">
+                              <button onClick={() => handleUpdateStopDates(stop.id)} className="px-2 py-1 bg-indigo-600 text-white text-xs font-bold rounded hover:bg-indigo-700">Save</button>
+                              <button onClick={() => setEditingStop(null)} className="px-2 py-1 bg-slate-200 text-slate-700 text-xs font-bold rounded hover:bg-slate-300">Cancel</button>
                             </div>
                           </div>
                         ) : (
-                          <div className="flex items-center mt-1 group/date cursor-pointer" onClick={() => {
+                          <div className="flex flex-col mt-1 group/date cursor-pointer" onClick={() => {
                             setEditingStop(stop.id);
                             setStopDates({
                               start_date: new Date(stop.start_date).toISOString().split('T')[0],
-                              end_date: new Date(stop.end_date).toISOString().split('T')[0]
-                            });
+                              end_date: new Date(stop.end_date).toISOString().split('T')[0],
+                              section_type: stop.section_type,
+                              section_budget: stop.section_budget
+                            } as any);
                           }}>
-                            <p className="text-sm font-medium text-slate-500 hover:text-indigo-600 transition-colors">
+                            <div className="flex items-center text-sm font-medium text-slate-500 group-hover/date:text-indigo-600 transition-colors">
                               {format(new Date(stop.start_date), 'MMM d')} - {format(new Date(stop.end_date), 'MMM d, yyyy')}
-                            </p>
-                            <Edit2 className="h-3 w-3 ml-2 text-slate-300 group-hover/date:text-indigo-400" />
+                              <Edit2 className="h-3 w-3 ml-2 text-slate-300 group-hover/date:text-indigo-400" />
+                            </div>
+                            {stop.section_budget != null && (
+                              <div className="text-xs font-semibold text-emerald-600 mt-1 flex flex-col gap-0.5">
+                                <span>Budget: {formatINR(stop.section_budget)}</span>
+                                <span className="text-[10px] text-slate-500">{getLocalCurrencyInfo(stop.section_budget, stop.city.country).split(' ')[1]}</span>
+                              </div>
+                            )}
                           </div>
                         )}
                       </div>
@@ -261,10 +305,17 @@ export default function ItineraryView() {
                         <ul className="space-y-4">
                           {stop.activities.map((tripActivity: any) => (
                             <li key={tripActivity.id} className="flex gap-4 group/item">
-                              <img className="h-14 w-14 rounded-xl object-cover bg-slate-100 shadow-sm" src={tripActivity.activity.image_url} alt="" onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/100x100?text=N/A' }} />
+                                <img className="h-14 w-14 rounded-xl object-cover bg-slate-100 shadow-sm" src={tripActivity.activity.image_url} alt="" onError={(e) => { 
+                                  (e.target as HTMLImageElement).src = 'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22100%22%20height%3D%22100%22%20viewBox%3D%220%200%20100%20100%22%3E%3Crect%20width%3D%22100%22%20height%3D%22100%22%20fill%3D%22%23f1f5f9%22%20%2F%3E%3Cpath%20d%3D%22M30%2070L70%2030M30%2030L70%2070%22%20stroke%3D%22%23cbd5e1%22%20stroke-width%3D%228%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E';
+                                }} />
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-start justify-between">
-                                  <h4 className="text-sm font-bold text-slate-900 truncate pr-2">{tripActivity.activity.name}</h4>
+                                    <div className="flex items-center gap-2 truncate pr-2">
+                                      <h4 className="text-sm font-bold text-slate-900 truncate">{tripActivity.activity.name}</h4>
+                                      <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100 flex flex-col items-center">
+                                        <span>{formatINR(tripActivity.cost_override ?? tripActivity.activity.cost)}</span>
+                                      </span>
+                                    </div>
                                   <button onClick={() => handleRemoveActivity(stop.id, tripActivity.id)} className="text-slate-400 hover:text-red-500 opacity-0 group-hover/item:opacity-100 transition-opacity flex-shrink-0" title="Remove activity">
                                     <Trash2 className="h-4 w-4" />
                                   </button>
@@ -327,8 +378,9 @@ export default function ItineraryView() {
                                   </span>
                                 </div>
                                 {tripActivity.activity.cost > 0 && (
-                                  <p className="text-xs font-semibold text-emerald-600 mt-1 flex items-center">
-                                    <DollarSign className="h-3 w-3" /> {tripActivity.activity.cost}
+                                  <p className="text-xs font-semibold text-emerald-600 mt-1 flex items-center gap-1">
+                                    <span>{formatINR(tripActivity.activity.cost)}</span>
+                                    <span className="text-[10px] text-slate-500 font-normal">({getLocalCurrencyInfo(tripActivity.activity.cost, stop.city.country).split(' ')[1]})</span>
                                   </p>
                                 )}
                               </div>

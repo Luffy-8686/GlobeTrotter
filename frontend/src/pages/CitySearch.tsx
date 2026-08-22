@@ -54,13 +54,21 @@ export default function CitySearch() {
         // If it's the first stop, make it span the whole trip initially
       }
 
-      await axios.post(`http://localhost:5000/api/trips/${id}/stops`, {
+      const res = await axios.post(`http://localhost:5000/api/trips/${id}/stops`, {
         city_id: cityId,
         start_date: start_date.toISOString(),
         end_date: end_date.toISOString(),
         order_index: trip.stops ? trip.stops.length : 0
       });
-      toast.success('Destination added to your itinerary!');
+      
+      if (res.data.new_badges && res.data.new_badges.length > 0) {
+        res.data.new_badges.forEach((b: any) => {
+          toast.success(`🏅 Badge Earned: ${b.name}!`);
+        });
+      } else {
+        toast.success('Destination added to your itinerary!');
+      }
+      
       navigate(`/trips/${id}`);
     } catch (error) {
       toast.error('Failed to add destination');
@@ -113,9 +121,13 @@ export default function CitySearch() {
             <div key={city.id} className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col group hover:-translate-y-1 hover:shadow-md transition-all">
               <div className="h-48 relative overflow-hidden bg-slate-100">
                 {city.image_url ? (
-                  <img src={city.image_url} alt={city.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/600x400?text=No+Image' }} />
+                  <img src={city.image_url} alt={city.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onError={(e) => { 
+                    (e.target as HTMLImageElement).src = 'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22600%22%20height%3D%22400%22%20viewBox%3D%220%200%20600%20400%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22grad1%22%20x1%3D%220%25%22%20y1%3D%220%25%22%20x2%3D%22100%25%22%20y2%3D%22100%25%22%3E%3Cstop%20offset%3D%220%25%22%20style%3D%22stop-color%3A%236366f1%3Bstop-opacity%3A1%22%20%2F%3E%3Cstop%20offset%3D%22100%25%22%20style%3D%22stop-color%3A%238b5cf6%3Bstop-opacity%3A1%22%20%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%22600%22%20height%3D%22400%22%20fill%3D%22url(%23grad1)%22%20%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20fill%3D%22%23ffffff%22%20font-family%3D%22sans-serif%22%20font-size%3D%2224%22%20font-weight%3D%22bold%22%3ECity%3C%2Ftext%3E%3C%2Fsvg%3E';
+                  }} />
                 ) : (
-                  <div className="w-full h-full bg-slate-200 flex items-center justify-center text-slate-400">No Image</div>
+                  <div className="w-full h-full bg-slate-50 flex items-center justify-center text-slate-300">
+                    <MapPin className="h-12 w-12" />
+                  </div>
                 )}
                 <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-lg text-xs font-bold text-slate-900 shadow-sm">
                   Pop: {city.popularity_score}
@@ -127,9 +139,9 @@ export default function CitySearch() {
                 
                 <div className="mt-auto">
                   <div className="flex justify-between items-center mb-5">
-                    <span className="text-xs font-bold uppercase tracking-wider bg-slate-100 px-2 py-1 rounded-md text-slate-600">
-                      {'$'.repeat(city.cost_index)}
-                    </span>
+                    <div className="flex items-center gap-1 text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md">
+                      {'₹'.repeat(city.cost_index)}
+                    </div>
                     <span className="text-xs font-medium text-slate-500">{city.region}</span>
                   </div>
                   

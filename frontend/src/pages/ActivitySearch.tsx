@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { ArrowLeft, Plus, Clock, DollarSign, MapPin, Calendar, Check, X } from 'lucide-react';
+import { getLocalCurrencyInfo, formatINR } from '../utils/currency';
 
 export default function ActivitySearch() {
   const { id, stopId } = useParams<{ id: string, stopId: string }>();
@@ -132,9 +133,13 @@ export default function ActivitySearch() {
               <div key={act.id} className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col group hover:-translate-y-1 hover:shadow-md transition-all">
                 <div className="h-48 relative overflow-hidden bg-slate-100">
                   {act.image_url ? (
-                    <img src={act.image_url} alt={act.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/600x400?text=No+Image' }} />
+                    <img src={act.image_url} alt={act.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onError={(e) => { 
+                      (e.target as HTMLImageElement).src = 'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22600%22%20height%3D%22400%22%20viewBox%3D%220%200%20600%20400%22%3E%3Crect%20width%3D%22600%22%20height%3D%22400%22%20fill%3D%22%23f1f5f9%22%20%2F%3E%3Cpath%20d%3D%22M200%20300L400%20100M200%20100L400%20300%22%20stroke%3D%22%23cbd5e1%22%20stroke-width%3D%2220%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E';
+                    }} />
                   ) : (
-                    <div className="w-full h-full bg-slate-200" />
+                    <div className="w-full h-full bg-slate-50 flex items-center justify-center text-slate-300">
+                      <MapPin className="h-12 w-12" />
+                    </div>
                   )}
                   <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-lg text-xs font-bold text-slate-900 shadow-sm uppercase tracking-wider">
                     {act.category}
@@ -150,9 +155,9 @@ export default function ActivitySearch() {
                         <Clock className="mr-1.5 h-4 w-4" />
                         {act.duration_minutes} min
                       </span>
-                      <span className="flex items-center text-emerald-700 bg-emerald-50 px-2 py-1 rounded-md">
-                        <DollarSign className="h-4 w-4" />
-                        {act.cost.toFixed(2)}
+                      <span className="flex flex-col items-end text-emerald-700 bg-emerald-50 px-2 py-1 rounded-md border border-emerald-100">
+                        <span className="font-bold">{formatINR(act.cost)}</span>
+                        <span className="text-[10px] text-emerald-600/80">{getLocalCurrencyInfo(act.cost, cityName).split(' ')[1]}</span>
                       </span>
                     </div>
                     

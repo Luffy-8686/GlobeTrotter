@@ -12,9 +12,16 @@ const prisma = new PrismaClient();
 
 const signupSchema = z.object({
   body: z.object({
-    name: z.string().min(2, 'Name must be at least 2 characters'),
+    name: z.string().optional(), // Fallback
+    first_name: z.string().min(2, 'First name must be at least 2 characters').optional(),
+    last_name: z.string().min(2, 'Last name must be at least 2 characters').optional(),
     email: z.string().email('Invalid email format'),
     password: z.string().min(6, 'Password must be at least 6 characters'),
+    phone: z.string().optional(),
+    city: z.string().optional(),
+    country: z.string().optional(),
+    additional_info: z.string().optional(),
+    profile_photo_url: z.string().optional(),
   }),
 });
 
@@ -27,7 +34,7 @@ const loginSchema = z.object({
 
 router.post('/signup', authLimiter, validateRequest(signupSchema), async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const { name, email, password } = req.body;
+    const { name, first_name, last_name, email, password, phone, city, country, additional_info, profile_photo_url } = req.body;
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
       res.status(400).json({ error: 'User with this email already exists' });
@@ -35,8 +42,22 @@ router.post('/signup', authLimiter, validateRequest(signupSchema), async (req: R
     }
 
     const password_hash = await bcrypt.hash(password, 10);
+    // Use first_name + last_name for legacy name if not provided directly
+    const computedName = name || `${first_name || ''} ${last_name || ''}`.trim() || email.split('@')[0];
+
     const user = await prisma.user.create({
-      data: { name, email, password_hash },
+      data: { 
+        name: computedName, 
+        first_name, 
+        last_name, 
+        email, 
+        password_hash,
+        phone,
+        city,
+        country,
+        additional_info,
+        profile_photo_url
+      },
     });
 
     const token = jwt.sign(
@@ -45,7 +66,18 @@ router.post('/signup', authLimiter, validateRequest(signupSchema), async (req: R
       { expiresIn: '7d' }
     );
 
-    res.status(201).json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role } });
+    res.status(201).json({ 
+      token, 
+      user: { 
+        id: user.id, 
+        name: user.name, 
+        first_name: user.first_name,
+        last_name: user.last_name,
+        email: user.email, 
+        role: user.role,
+        profile_photo_url: user.profile_photo_url
+      } 
+    });
   } catch (error) {
     next(error);
   }
@@ -72,7 +104,18 @@ router.post('/login', authLimiter, validateRequest(loginSchema), async (req: Req
       { expiresIn: '7d' }
     );
 
-    res.status(200).json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role, profile_photo_url: user.profile_photo_url } });
+    res.status(200).json({ 
+      token, 
+      user: { 
+        id: user.id, 
+        name: user.name, 
+        first_name: user.first_name,
+        last_name: user.last_name,
+        email: user.email, 
+        role: user.role, 
+        profile_photo_url: user.profile_photo_url 
+      } 
+    });
   } catch (error) {
     next(error);
   }

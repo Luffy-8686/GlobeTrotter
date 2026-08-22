@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Plus, Map, Calendar, DollarSign, ArrowRight, PlaneTakeoff, X } from 'lucide-react';
+import { Plus, Map, Calendar, DollarSign, ArrowRight, PlaneTakeoff, X, Search, Filter } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'react-toastify';
 
@@ -13,10 +13,23 @@ export default function Dashboard() {
   const [allCities, setAllCities] = useState<any[]>([]);
   const [cities, setCities] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  
+  // Search and Sort state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [regionFilter, setRegionFilter] = useState('');
+  const [sortOption, setSortOption] = useState('popularity');
 
   // Template Modal State
   const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
   const [templateStartDate, setTemplateStartDate] = useState('');
+
+  const regions = [
+    { name: 'Europe', image: 'https://images.unsplash.com/photo-1499856871958-5b9627545d1a?auto=format&fit=crop&w=400&q=80' },
+    { name: 'Asia', image: 'https://images.unsplash.com/photo-1528164344705-47542687000d?auto=format&fit=crop&w=400&q=80' },
+    { name: 'North America', image: 'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?auto=format&fit=crop&w=400&q=80' },
+    { name: 'South America', image: 'https://images.unsplash.com/photo-1483729558449-99ef09a8c325?auto=format&fit=crop&w=400&q=80' },
+    { name: 'Oceania', image: 'https://images.unsplash.com/photo-1506973035872-a4ec16b8e8d9?auto=format&fit=crop&w=400&q=80' },
+  ];
 
   useEffect(() => {
     const fetchData = async () => {
@@ -27,7 +40,7 @@ export default function Dashboard() {
         ]);
         setTrips(tripsRes.data.slice(0, 3)); 
         setAllCities(citiesRes.data);
-        setCities(citiesRes.data.slice(0, 4));
+        setCities(citiesRes.data);
       } catch (error) {
         console.error("Failed to fetch dashboard data", error);
       } finally {
@@ -81,6 +94,17 @@ export default function Dashboard() {
     }
   };
 
+  const filteredCities = cities
+    .filter(c => regionFilter ? c.region === regionFilter || c.region.includes(regionFilter) : true)
+    .filter(c => searchQuery ? c.name.toLowerCase().includes(searchQuery.toLowerCase()) : true)
+    .sort((a, b) => {
+      if (sortOption === 'popularity') return b.popularity_score - a.popularity_score;
+      if (sortOption === 'cost-low') return a.cost_index - b.cost_index;
+      if (sortOption === 'cost-high') return b.cost_index - a.cost_index;
+      return 0;
+    })
+    .slice(0, 4);
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
       {/* Template Setup Modal */}
@@ -128,7 +152,7 @@ export default function Dashboard() {
              <PlaneTakeoff className="h-4 w-4" /> AI-Powered Itinerary Planner
           </div>
           <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4 drop-shadow-sm">
-            Where to next, {user?.name?.split(' ')[0] || 'Explorer'}? ✈️
+            Where to next, {user?.first_name || user?.name?.split(' ')[0] || 'Explorer'}? ✈️
           </h1>
           <p className="text-lg md:text-xl opacity-90 mb-8 max-w-xl">
             Design multi-city itineraries end-to-end, discover curated activities, track budgets, and share your adventures seamlessly.
@@ -142,242 +166,134 @@ export default function Dashboard() {
               Plan a New Trip
             </Link>
             <Link
-              to="/trips/new/cities" 
-              className="inline-flex items-center justify-center px-6 py-3 rounded-xl text-sm font-bold text-white border-2 border-white/40 hover:bg-white/10 transition-all"
+              to="/trips"
+              className="inline-flex items-center justify-center px-6 py-3 rounded-xl shadow-lg text-sm font-bold text-white bg-white/20 hover:bg-white/30 border border-white/40 backdrop-blur-md transition-all hover:scale-105"
             >
-              <Map className="-ml-1 mr-2 h-5 w-5" />
-              Explore Destinations
+              View My Trips
             </Link>
           </div>
         </div>
+        {/* Decorative elements */}
+        <div className="absolute right-0 top-0 w-1/2 h-full opacity-20 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 70% 30%, white 0%, transparent 60%)' }} />
       </div>
 
-      {/* Quick Stats */}
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
-        {[
-          { label: 'Total Trips', value: loading ? '-' : trips.length, icon: Map, color: 'text-indigo-600', bg: 'bg-indigo-50' },
-          { label: 'Upcoming Stops', value: loading ? '-' : trips.reduce((acc, trip) => acc + (trip._count?.stops || 0), 0), icon: Calendar, color: 'text-amber-600', bg: 'bg-amber-50' },
-          { label: 'Planned Budget', value: loading ? '-' : '$2,450', icon: DollarSign, color: 'text-emerald-600', bg: 'bg-emerald-50' } // Still mocked budget summary for dashboard
-        ].map((stat, idx) => (
-          <div key={idx} className="bg-white overflow-hidden shadow-sm border border-slate-200 rounded-2xl p-6 transition-all hover:shadow-md">
-            <div className="flex items-center">
-              <div className={`flex-shrink-0 p-3 rounded-xl ${stat.bg}`}>
-                <stat.icon className={`h-6 w-6 ${stat.color}`} />
-              </div>
-              <div className="ml-5 w-0 flex-1">
-                <dl>
-                  <dt className="text-sm font-medium text-slate-500 truncate">{stat.label}</dt>
-                  <dd className="text-2xl font-bold text-slate-900">{stat.value}</dd>
-                </dl>
-              </div>
-            </div>
+      {/* Search and Filters */}
+      <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row gap-4 items-center">
+        <div className="relative flex-1 w-full">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <Search className="h-5 w-5 text-slate-400" />
           </div>
-        ))}
+          <input
+            type="text"
+            placeholder="Search destinations..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10 block w-full border-slate-200 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm py-2"
+          />
+        </div>
+        <div className="flex gap-4 w-full md:w-auto">
+          <div className="flex-1 md:w-48">
+            <select
+              value={sortOption}
+              onChange={(e) => setSortOption(e.target.value)}
+              className="block w-full border-slate-200 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm py-2"
+            >
+              <option value="popularity">Sort by Popularity</option>
+              <option value="cost-low">Sort by Cost (Low-High)</option>
+              <option value="cost-high">Sort by Cost (High-Low)</option>
+            </select>
+          </div>
+        </div>
       </div>
 
-      {/* Top Destinations Section */}
+      {/* Top Regional Selections */}
       <div>
         <div className="flex items-center justify-between mb-6">
-          <div>
-            <h3 className="text-xl font-bold text-slate-900 tracking-tight">🌏 Top Destinations</h3>
-            <p className="text-sm text-slate-500 mt-1">Handpicked global cities for your next trip</p>
-          </div>
-          <Link to="/trips/new/cities" className="text-sm font-semibold text-indigo-600 hover:text-indigo-700 flex items-center transition-colors">
-            Explore all <ArrowRight className="ml-1 h-4 w-4" />
-          </Link>
+          <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Top Regional Selections</h2>
         </div>
-        
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {cities.map((city) => (
-            <div key={city.id} className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col group hover:-translate-y-1 hover:shadow-md transition-all cursor-pointer">
-              <div className="h-40 relative overflow-hidden bg-slate-100">
-                {city.image_url ? (
-                  <img src={city.image_url} alt={city.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/600x400?text=No+Image' }} />
-                ) : (
-                  <div className="w-full h-full bg-slate-200 flex items-center justify-center text-slate-400">No Image</div>
-                )}
-                <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-lg text-xs font-bold text-slate-900 shadow-sm">
-                  {'$'.repeat(city.cost_index || 1)}
-                </div>
-              </div>
-              <div className="p-4 flex-1 flex flex-col">
-                <div className="flex justify-between items-start">
-                  <h4 className="text-lg font-bold text-slate-900">{city.name}</h4>
-                  <span className="bg-amber-100 text-amber-700 text-[10px] px-1.5 py-0.5 rounded font-bold">★ {city.popularity_score}</span>
-                </div>
-                <p className="text-sm text-slate-500">{city.country}</p>
-              </div>
-            </div>
+        <div className="flex space-x-4 overflow-x-auto pb-4 scrollbar-hide">
+          {regions.map((region) => (
+            <button
+              key={region.name}
+              onClick={() => setRegionFilter(regionFilter === region.name ? '' : region.name)}
+              className={`flex-none w-40 h-24 rounded-2xl relative overflow-hidden group border-2 transition-all ${regionFilter === region.name ? 'border-indigo-600 scale-105' : 'border-transparent'}`}
+            >
+              <div className="absolute inset-0 bg-slate-900/30 group-hover:bg-slate-900/20 transition-all z-10"></div>
+              <img src={region.image} alt={region.name} className="absolute inset-0 w-full h-full object-cover" />
+              <span className="absolute inset-0 z-20 flex items-center justify-center text-white font-bold text-sm drop-shadow-md">
+                {region.name}
+              </span>
+            </button>
           ))}
         </div>
       </div>
 
-      {/* Popular Pre-Planned Itineraries */}
+      {/* Top Destinations Grid based on filters */}
       <div>
         <div className="flex items-center justify-between mb-6">
-          <div>
-            <h3 className="text-xl font-bold text-slate-900 tracking-tight">🔥 Popular Itinerary Templates</h3>
-            <p className="text-sm text-slate-500 mt-1">Pre-planned trips loved by the community</p>
-          </div>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[
-            {
-              id: 't1',
-              name: '7 Days in Italy: The Golden Triangle',
-              days: 7,
-              stops: ['Rome', 'Florence', 'Venice'],
-              image: 'https://images.unsplash.com/photo-1552832230-c0197dd311b5?auto=format&fit=crop&w=800&q=80',
-              budget: '$$$'
-            },
-            {
-              id: 't2',
-              name: 'Classic Japan Highlights',
-              days: 10,
-              stops: ['Tokyo', 'Kyoto', 'Osaka'],
-              image: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=800&q=80',
-              budget: '$$$$'
-            },
-            {
-              id: 't3',
-              name: 'European Backpacking Route',
-              days: 14,
-              stops: ['Paris', 'Amsterdam', 'Prague', 'Berlin'],
-              image: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=800&q=80',
-              budget: '$$'
-            },
-            {
-              id: 't4',
-              name: 'Best of Southeast Asia',
-              days: 12,
-              stops: ['Bangkok', 'Singapore', 'Bali'],
-              image: 'https://images.unsplash.com/photo-1525625293386-3f8f99389edd?auto=format&fit=crop&w=800&q=80',
-              budget: '$$'
-            },
-            {
-              id: 't5',
-              name: 'USA Coast to Coast',
-              days: 14,
-              stops: ['New York City', 'Chicago', 'Los Angeles'],
-              image: 'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?auto=format&fit=crop&w=800&q=80',
-              budget: '$$$$'
-            },
-            {
-              id: 't6',
-              name: 'South African Explorer',
-              days: 10,
-              stops: ['Cape Town', 'Kruger', 'Johannesburg'],
-              image: 'https://images.unsplash.com/photo-1580060839134-75a5edca2e99?auto=format&fit=crop&w=800&q=80',
-              budget: '$$$'
-            }
-          ].map((template) => (
-            <div key={template.id} className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden group hover:shadow-md transition-all cursor-pointer">
-              <div className="h-48 relative overflow-hidden bg-slate-900">
-                <img src={template.image} alt={template.name} className="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-700" />
-                <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold text-slate-900 shadow-sm flex items-center gap-1.5">
-                  <Calendar className="h-3.5 w-3.5 text-indigo-600" /> {template.days} Days
-                </div>
-              </div>
-              <div className="p-5">
-                <h4 className="text-lg font-bold text-slate-900 mb-2 leading-tight">{template.name}</h4>
-                <div className="flex flex-wrap gap-1.5 mb-4">
-                  {template.stops.map((stop, i) => (
-                    <span key={i} className="text-[11px] font-semibold bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-full">
-                      {stop}
-                    </span>
-                  ))}
-                </div>
-                <div className="flex justify-between items-center pt-4 border-t border-slate-100">
-                  <span className="text-sm font-semibold text-slate-500">Budget: <span className="text-emerald-600">{template.budget}</span></span>
-                  <button onClick={() => setSelectedTemplate(template)} className="text-sm font-bold text-indigo-600 hover:text-indigo-700">Use Template &rarr;</button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Recent Trips Section */}
-      <div>
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-bold text-slate-900 tracking-tight">Recent Trips</h3>
-          <Link to="/trips" className="text-sm font-semibold text-indigo-600 hover:text-indigo-700 flex items-center transition-colors">
+          <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Destinations {regionFilter && `in ${regionFilter}`}</h2>
+          <Link to="/create-trip" className="text-sm font-semibold text-indigo-600 hover:text-indigo-700 flex items-center">
             View all <ArrowRight className="ml-1 h-4 w-4" />
           </Link>
         </div>
-        
         {loading ? (
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden animate-pulse">
-                <div className="h-48 bg-slate-200" />
-                <div className="p-5 space-y-4">
-                  <div className="h-6 bg-slate-200 rounded w-3/4" />
-                  <div className="h-4 bg-slate-200 rounded w-1/2" />
-                  <div className="pt-4 border-t border-slate-100 flex justify-between">
-                    <div className="h-4 bg-slate-200 rounded w-1/4" />
-                    <div className="h-4 bg-slate-200 rounded w-1/4" />
+          <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div></div>
+        ) : filteredCities.length === 0 ? (
+          <div className="text-center py-12 bg-white rounded-2xl border border-dashed border-slate-300 text-slate-500">No destinations found.</div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {filteredCities.map((city) => (
+              <div key={city.id} className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden group hover:shadow-md transition-all">
+                <div className="relative h-48 overflow-hidden">
+                  <img src={city.image_url} alt={city.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                  <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-lg shadow-sm text-xs font-bold text-emerald-600">
+                    {Array(city.cost_index).fill('₹').join('')}
                   </div>
+                </div>
+                <div className="p-4">
+                  <h3 className="text-lg font-bold text-slate-900">{city.name}</h3>
+                  <p className="text-sm text-slate-500 mb-4">{city.country}</p>
+                  <Link
+                    to="/create-trip"
+                    className="w-full inline-flex justify-center items-center px-4 py-2 border border-slate-200 rounded-xl text-sm font-bold text-slate-700 bg-white hover:bg-slate-50 hover:text-indigo-600 transition-colors"
+                  >
+                    Plan Trip Here
+                  </Link>
                 </div>
               </div>
             ))}
           </div>
-        ) : trips.length > 0 ? (
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        )}
+      </div>
+
+      {/* Previous Trips Strip */}
+      {trips.length > 0 && (
+        <div>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Your Recent Trips</h2>
+            <Link to="/trips" className="text-sm font-semibold text-indigo-600 hover:text-indigo-700 flex items-center">
+              View all <ArrowRight className="ml-1 h-4 w-4" />
+            </Link>
+          </div>
+          <div className="flex space-x-6 overflow-x-auto pb-4 scrollbar-hide">
             {trips.map((trip) => (
-              <Link key={trip.id} to={`/trips/${trip.id}`} className="block group">
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1 h-full flex flex-col">
-                  <div className="h-48 bg-slate-100 relative overflow-hidden">
-                    {trip.cover_photo_url ? (
-                      <img 
-                        src={trip.cover_photo_url} 
-                        alt={trip.name} 
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
-                        onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/600x400?text=No+Image' }} 
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-slate-300 bg-slate-50">
-                        <Map className="h-12 w-12" />
-                      </div>
-                    )}
-                  </div>
-                  <div className="p-5 flex-1 flex flex-col">
-                    <h4 className="text-xl font-bold text-slate-900 mb-1 truncate">{trip.name}</h4>
-                    <p className="text-sm text-slate-500 font-medium mb-4 flex items-center gap-1.5">
-                      <Calendar className="h-4 w-4" />
-                      {format(new Date(trip.start_date), 'MMM d, yyyy')} - {format(new Date(trip.end_date), 'MMM d, yyyy')}
-                    </p>
-                    <div className="mt-auto pt-4 border-t border-slate-100 flex justify-between items-center text-sm font-semibold">
-                      <span className="bg-slate-100 text-slate-600 px-2.5 py-1 rounded-lg">{trip._count?.stops || 0} stops</span>
-                      <span className="text-indigo-600 group-hover:text-indigo-700 flex items-center">
-                        Itinerary <ArrowRight className="ml-1 h-4 w-4 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
-                      </span>
-                    </div>
+              <Link key={trip.id} to={`/trips/${trip.id}`} className="flex-none w-72 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden group hover:shadow-md transition-all">
+                <div className="relative h-32">
+                  <img src={trip.cover_photo_url || 'https://images.unsplash.com/photo-1488646953014-85cb44e25828'} alt="" className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent"></div>
+                  <h3 className="absolute bottom-3 left-4 text-lg font-bold text-white tracking-wide">{trip.name}</h3>
+                </div>
+                <div className="p-4 bg-white">
+                  <div className="flex items-center text-sm text-slate-500 mb-1">
+                    <Calendar className="mr-1.5 h-4 w-4 text-slate-400" />
+                    {format(new Date(trip.start_date), 'MMM d, yyyy')}
                   </div>
                 </div>
               </Link>
             ))}
           </div>
-        ) : (
-          <div className="text-center bg-white rounded-2xl shadow-sm border border-slate-200 py-16 px-4">
-            <div className="bg-indigo-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-               <Map className="h-8 w-8 text-indigo-600" />
-            </div>
-            <h3 className="text-lg font-bold text-slate-900 tracking-tight">No trips planned yet</h3>
-            <p className="mt-2 text-sm text-slate-500 max-w-sm mx-auto">Get started by creating your very first trip and exploring exciting destinations.</p>
-            <div className="mt-8">
-              <Link
-                to="/create-trip"
-                className="inline-flex items-center px-5 py-2.5 border border-transparent shadow-sm text-sm font-semibold rounded-xl text-white bg-indigo-600 hover:bg-indigo-700 transition-all hover:-translate-y-0.5"
-              >
-                <Plus className="-ml-1 mr-2 h-5 w-5" />
-                Plan Trip
-              </Link>
-            </div>
-          </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
