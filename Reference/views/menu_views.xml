@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ================================================================== -->
+    <!-- GlobeTrotter Top Menu                                               -->
+    <!-- ================================================================== -->
+    <menuitem id="menu_globetrotter_root"
+              name="GlobeTrotter"
+              sequence="100"
+              web_icon="globetrotter,static/src/img/icon.png"
+              groups="globetrotter.group_admin"/>
+
+    <!-- ================================================================== -->
+    <!-- Sub-menus                                                           -->
+    <!-- ================================================================== -->
+    <menuitem id="menu_gt_trips"
+              name="Trips"
+              parent="menu_globetrotter_root"
+              action="action_gt_trip"
+              sequence="10"/>
+
+    <menuitem id="menu_gt_master_data"
+              name="Master Data"
+              parent="menu_globetrotter_root"
+              sequence="20"/>
+
+    <menuitem id="menu_gt_cities"
+              name="Cities"
+              parent="menu_gt_master_data"
+              action="action_gt_city"
+              sequence="10"/>
+
+    <menuitem id="menu_gt_activities"
+              name="Activities"
+              parent="menu_gt_master_data"
+              action="action_gt_activity"
+              sequence="20"/>
+
+    <menuitem id="menu_gt_expenses"
+              name="Expenses"
+              parent="menu_globetrotter_root"
+              action="action_gt_expense"
+              sequence="30"/>
+
+    <menuitem id="menu_gt_share_links"
+              name="Share Links"
+              parent="menu_globetrotter_root"
+              action="action_gt_share_link"
+              sequence="40"/>
+</odoo>

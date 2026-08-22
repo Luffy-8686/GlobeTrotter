@@ -27,11 +27,20 @@ export default function TripCalendar() {
   const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const [view, setView] = useState<any>('week');
+  const [date, setDate] = useState<Date>(new Date());
+  const [tripData, setTripData] = useState<any>(null);
+
   useEffect(() => {
     const fetchTrip = async () => {
       try {
         const res = await axios.get(`http://localhost:5000/api/trips/${id}`);
         const trip = res.data;
+        setTripData(trip);
+        
+        if (trip.start_date) {
+           setDate(new Date(trip.start_date));
+        }
         
         let mappedEvents: any[] = [];
         
@@ -48,6 +57,13 @@ export default function TripCalendar() {
           // Map activities (mocking time for now if missing)
           stop.activities.forEach((act: any) => {
              const actDate = act.scheduled_date ? new Date(act.scheduled_date) : new Date(stop.start_date);
+             
+             // If scheduled_time is present, parse it (e.g. "14:00")
+             if (act.scheduled_time) {
+                const [hours, minutes] = act.scheduled_time.split(':');
+                actDate.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0);
+             }
+             
              const endDate = new Date(actDate.getTime() + (act.activity.duration_minutes * 60000));
              mappedEvents.push({
                title: act.activity.name,
@@ -73,16 +89,16 @@ export default function TripCalendar() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 h-[calc(100vh-64px)] flex flex-col">
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <Link to={`/trips/${id}`} className="text-sm font-medium text-blue-600 hover:text-blue-500 flex items-center mb-2">
+          <Link to={`/trips/${id}`} className="text-sm font-medium text-indigo-600 hover:text-indigo-700 flex items-center mb-2 transition-colors">
             <ArrowLeft className="mr-1 h-4 w-4" /> Back to Itinerary
           </Link>
-          <h1 className="text-2xl font-bold text-gray-900">Trip Calendar</h1>
+          <h1 className="text-2xl font-bold text-slate-900">Trip Calendar</h1>
         </div>
       </div>
       
-      <div className="flex-1 bg-white p-4 rounded-lg shadow-sm border border-gray-200 overflow-x-auto">
+      <div className="flex-1 bg-white p-4 rounded-2xl shadow-sm border border-slate-200 overflow-x-auto">
         {loading ? (
-           <div>Loading calendar...</div>
+           <div className="animate-pulse h-full bg-slate-100 rounded-xl"></div>
         ) : (
           <div className="min-w-[700px] h-full min-h-[500px]">
             <Calendar
@@ -92,10 +108,13 @@ export default function TripCalendar() {
               endAccessor="end"
               style={{ height: '100%' }}
               views={['month', 'week', 'day', 'agenda']}
-              defaultView="week"
+              view={view}
+              onView={(newView) => setView(newView)}
+              date={date}
+              onNavigate={(newDate) => setDate(newDate)}
               eventPropGetter={(event) => {
-                const backgroundColor = event.resource === 'stop' ? '#3b82f6' : '#10b981';
-                return { style: { backgroundColor } };
+                const backgroundColor = event.resource === 'stop' ? '#4f46e5' : '#0ea5e9';
+                return { style: { backgroundColor, borderRadius: '6px', border: 'none' } };
               }}
             />
           </div>

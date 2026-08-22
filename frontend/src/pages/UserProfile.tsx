@@ -1,16 +1,31 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { User, Globe } from 'lucide-react';
+import { User, Globe, Image as ImageIcon } from 'lucide-react';
 import { toast } from 'react-toastify';
+import axios from 'axios';
 
 export default function UserProfile() {
-  const { user } = useAuth();
+  const { user, login, token } = useAuth();
   const [name, setName] = useState(user?.name || '');
-  const [lang, setLang] = useState('en');
+  const [lang, setLang] = useState((user as any)?.language_preference || 'en');
+  const [photoUrl, setPhotoUrl] = useState(user?.profile_photo_url || '');
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast.success('Profile updated! (Mocked)');
+    try {
+      const res = await axios.put('http://localhost:5000/api/auth/me', {
+        name,
+        language_preference: lang,
+        profile_photo_url: photoUrl
+      });
+      if (token) {
+        login(token, res.data);
+      }
+      toast.success('Profile updated successfully!');
+    } catch (error) {
+      toast.error('Failed to update profile');
+      console.error(error);
+    }
   };
 
   return (
@@ -23,17 +38,27 @@ export default function UserProfile() {
         
         <form onSubmit={handleSave} className="px-4 py-5 sm:p-6 space-y-6">
           <div className="flex items-center">
-            <div className="h-24 w-24 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
-              {user?.profile_photo_url ? (
-                <img src={user.profile_photo_url} alt="Profile" className="h-full w-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/100x100?text=User' }} />
+            <div className="h-24 w-24 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden flex-shrink-0">
+              {photoUrl ? (
+                <img src={photoUrl} alt="Profile" className="h-full w-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/100x100?text=User' }} />
               ) : (
                 <User className="h-12 w-12 text-gray-400" />
               )}
             </div>
-            <div className="ml-5">
-              <button type="button" className="bg-white py-2 px-3 border border-gray-300 rounded-md shadow-sm text-sm leading-4 font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                Change Photo
-              </button>
+            <div className="ml-5 flex-1 max-w-md">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Profile Photo URL</label>
+              <div className="flex relative rounded-md shadow-sm">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <ImageIcon className="h-4 w-4 text-gray-400" />
+                </div>
+                <input
+                  type="text"
+                  placeholder="https://..."
+                  value={photoUrl}
+                  onChange={(e) => setPhotoUrl(e.target.value)}
+                  className="focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md py-2 px-3 border"
+                />
+              </div>
             </div>
           </div>
 

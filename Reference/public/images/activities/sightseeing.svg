@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 250" width="100%" height="100%">
+  <defs>
+    <linearGradient id="sightSky" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FF6B6B"/>
+      <stop offset="60%" stop-color="#FECA57"/>
+      <stop offset="100%" stop-color="#48DBFB"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="250" fill="url(#sightSky)"/>
+  <circle cx="200" cy="110" r="55" fill="#FFF" opacity="0.8"/>
+  <polygon points="120,200 200,80 280,200" fill="#2C3E50"/>
+  <polygon points="170,200 200,120 230,200" fill="#E74C3C"/>
+  <rect y="195" width="400" height="55" fill="#1B1464"/>
+  <text x="200" y="232" fill="#FFFFFF" font-family="sans-serif" font-weight="bold" font-size="16" text-anchor="middle">🏛️ SIGHTSEEING TOUR</text>
+</svg>

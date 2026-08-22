@@ -3,9 +3,10 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { Compass, Mail, Lock, User } from 'lucide-react';
+import axios from 'axios';
 
 export default function LoginSignup() {
-  const { login, signup } = useAuth();
+  const { login } = useAuth();
   const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -34,11 +35,21 @@ export default function LoginSignup() {
     
     setLoading(true);
     try {
+      let res;
       if (isLogin) {
-        await login(formData.email, formData.password);
+        res = await axios.post('http://localhost:5000/api/auth/login', {
+          email: formData.email,
+          password: formData.password
+        });
       } else {
-        await signup(formData.name, formData.email, formData.password);
+        res = await axios.post('http://localhost:5000/api/auth/signup', {
+          name: formData.name,
+          email: formData.email,
+          password: formData.password
+        });
       }
+      
+      login(res.data.token, res.data.user);
       navigate('/dashboard');
     } catch (error: any) {
       toast.error(error.response?.data?.error || 'Authentication failed');

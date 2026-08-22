@@ -137,6 +137,18 @@ router.delete('/:id', authenticate, async (req: Request, res: Response, next: Ne
     }
 })
 
+const updateTripDates = async (tripId: string) => {
+  const stops = await prisma.stop.findMany({ where: { trip_id: tripId } });
+  if (stops.length > 0) {
+    const minDate = new Date(Math.min(...stops.map((s: any) => s.start_date.getTime())));
+    const maxDate = new Date(Math.max(...stops.map((s: any) => s.end_date.getTime())));
+    await prisma.trip.update({
+      where: { id: tripId },
+      data: { start_date: minDate, end_date: maxDate }
+    });
+  }
+};
+
 // Add Stop
 const stopSchema = z.object({
     body: z.object({
@@ -183,53 +195,94 @@ router.post('/:id/stops', authenticate, validateRequest(stopSchema), async (req:
           ]
         });
 
+        await updateTripDates(tripId);
+
         res.status(201).json(stop);
     } catch (error) {
         next(error);
     }
 });
 
-// Add Activity to Stop
-const activitySchema = z.object({
-  body: z.object({
-    activity_id: z.string()
-  })
+
+// Delete a Stop
+router.delete('/:id/stops/:stopId', authenticate, async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const { id, stopId } = req.params;
+    await prisma.stop.delete({ where: { id: stopId } });
+    await updateTripDates(id);
+    res.json({ message: 'Stop deleted' });
+  } catch (error) {
+    next(error);
+  }
 });
 
-router.post('/:id/stops/:stopId/activities', authenticate, validateRequest(activitySchema), async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+// Update a Stop (Dates)
+router.put('/:id/stops/:stopId', authenticate, async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const { activity_id } = req.body;
     const { id, stopId } = req.params;
+    const { start_date, end_date } = req.body;
+    const stop = await prisma.stop.update({
+      where: { id: stopId },
+      data: {
+        start_date: start_date ? new Date(start_date) : undefined,
+        end_date: end_date ? new Date(end_date) : undefined,
+      }
+    });
+    await updateTripDates(id);
+    res.json(stop);
+  } catch (error) {
+    next(error);
+  }
+});
 
-    const activity = await prisma.activity.findUnique({ where: { id: activity_id } });
-    if (!activity) {
-      res.status(404).json({ error: 'Activity not found' });
-      return;
-    }
-
-    const stop = await prisma.stop.findUnique({ where: { id: stopId } });
+// Add an activity to a stop
+router.post('/:id/stops/:stopId/activities', authenticate, async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const { id, stopId } = req.params;
+    const { activity_id, scheduled_date, scheduled_time, cost_override } = req.body;
 
     const tripActivity = await prisma.tripActivity.create({
       data: {
         stop_id: stopId,
         activity_id,
-        scheduled_date: stop?.start_date, // Default to stop start date
-      }
+        scheduled_date: scheduled_date ? new Date(scheduled_date) : null,
+        scheduled_time: scheduled_time || null,
+        cost_override,
+      },
+      include: { activity: true }
     });
 
-    // Auto-generate budget item
-    if (activity.cost > 0) {
+    // Auto-gen Activities Budget Item
+    if (tripActivity.activity.cost > 0 || cost_override) {
       await prisma.budgetItem.create({
-        data: {
-          trip_id: id,
-          category: 'activities',
-          amount: activity.cost,
-          date: stop?.start_date
-        }
+         data: {
+           trip_id: id,
+           category: 'activities',
+           amount: cost_override || tripActivity.activity.cost,
+           date: scheduled_date ? new Date(scheduled_date) : new Date()
+         }
       });
     }
 
     res.status(201).json(tripActivity);
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Update a TripActivity (Date/Time)
+router.put('/:id/stops/:stopId/activities/:tripActivityId', authenticate, async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const { tripActivityId } = req.params;
+    const { scheduled_date, scheduled_time } = req.body;
+    const tripActivity = await prisma.tripActivity.update({
+      where: { id: tripActivityId },
+      data: {
+        scheduled_date: scheduled_date ? new Date(scheduled_date) : null,
+        scheduled_time: scheduled_time || null,
+      }
+    });
+    res.json(tripActivity);
   } catch (error) {
     next(error);
   }

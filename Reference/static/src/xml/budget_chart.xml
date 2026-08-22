@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="globetrotter.BudgetChart">
+        <div class="gt-budget-page">
+            <t t-if="state.loading">
+                <div class="gt-budget-summary">
+                    <div class="gt-skeleton" style="height:120px;border-radius:12px;" t-foreach="[1,2,3]" t-as="i" t-key="i"/>
+                </div>
+                <div class="gt-skeleton" style="height:300px;border-radius:12px;"/>
+            </t>
+            <t t-elif="state.budgetData">
+                <!-- Budget Summary Cards -->
+                <div class="gt-budget-summary">
+                    <div class="gt-budget-stat-card gt-budget-stat--primary">
+                        <div class="gt-budget-stat-value"><t t-esc="this.formatCost(state.budgetData.total)"/></div>
+                        <div class="gt-budget-stat-label">Total Estimated Cost</div>
+                    </div>
+                    <div class="gt-budget-stat-card gt-budget-stat--secondary">
+                        <div class="gt-budget-stat-value"><t t-esc="this.formatCost(state.budgetData.per_day_average)"/></div>
+                        <div class="gt-budget-stat-label">Avg Per Day</div>
+                    </div>
+                    <div class="gt-budget-stat-card">
+                        <div class="gt-budget-stat-value"><t t-esc="state.budgetData.total_days || 0"/></div>
+                        <div class="gt-budget-stat-label">Total Days</div>
+                    </div>
+                </div>
+
+                <!-- Charts Grid -->
+                <div class="gt-flex gt-gap-3" style="flex-wrap:wrap;">
+                    <div class="gt-chart-container" style="flex:1;min-width:300px;">
+                        <h3 class="gt-chart-title">Category Breakdown</h3>
+                        <canvas t-ref="pieChart"/>
+                    </div>
+                    <div class="gt-chart-container" style="flex:1;min-width:300px;">
+                        <h3 class="gt-chart-title">Daily Cost Distribution</h3>
+                        <canvas t-ref="barChart"/>
+                    </div>
+                </div>
+
+                <!-- Cost Details -->
+                <div class="gt-chart-container gt-mt-3">
+                    <h3 class="gt-chart-title">Cost Details</h3>
+                    <div class="gt-flex gt-justify-between gt-py-2 gt-border-bottom">
+                        <span>Activity Costs</span>
+                        <span class="gt-text-semibold gt-text-secondary"><t t-esc="this.formatCost(state.budgetData.activity_total)"/></span>
+                    </div>
+                    <div class="gt-flex gt-justify-between gt-py-2 gt-border-bottom">
+                        <span>Manual Expenses</span>
+                        <span class="gt-text-semibold gt-text-secondary"><t t-esc="this.formatCost(state.budgetData.expense_total)"/></span>
+                    </div>
+                    <div class="gt-flex gt-justify-between gt-py-2 gt-text-bold" style="font-size:18px;">
+                        <span>Grand Total</span>
+                        <span class="gt-text-primary"><t t-esc="this.formatCost(state.budgetData.total)"/></span>
+                    </div>
+                </div>
+            </t>
+        </div>
+    </t>
+</templates>

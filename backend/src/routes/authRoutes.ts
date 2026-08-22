@@ -94,4 +94,30 @@ router.get('/me', authenticate, async (req: Request, res: Response, next: NextFu
   }
 });
 
+const updateProfileSchema = z.object({
+  body: z.object({
+    name: z.string().min(2, 'Name must be at least 2 characters').optional(),
+    language_preference: z.string().optional(),
+    profile_photo_url: z.string().url().optional().or(z.literal(''))
+  }),
+});
+
+router.put('/me', authenticate, validateRequest(updateProfileSchema), async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const { name, language_preference, profile_photo_url } = req.body;
+    const user = await prisma.user.update({
+      where: { id: req.user!.userId },
+      data: { 
+        ...(name && { name }),
+        ...(language_preference && { language_preference }),
+        ...(profile_photo_url !== undefined && { profile_photo_url: profile_photo_url || null }),
+      },
+      select: { id: true, name: true, email: true, role: true, profile_photo_url: true, language_preference: true }
+    });
+    res.json(user);
+  } catch (error) {
+    next(error);
+  }
+});
+
 export default router;

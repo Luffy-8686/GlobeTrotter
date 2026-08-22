@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="100%" height="100%">
+  <defs>
+    <linearGradient id="baliSky" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FF9F43"/>
+      <stop offset="40%" stop-color="#EE5253"/>
+      <stop offset="80%" stop-color="#0ABDE3"/>
+      <stop offset="100%" stop-color="#10AC84"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="500" fill="url(#baliSky)"/>
+  <!-- Sacred Mount Agung Silhouette -->
+  <polygon points="100,400 400,180 700,400" fill="#222F3E"/>
+  <!-- Balinese Temple Gate (Candi Bentar) -->
+  <g fill="#341F97">
+    <!-- Left Wing -->
+    <path d="M280 400 L280 180 L310 180 L310 210 L330 210 L330 250 L350 250 L350 400 Z"/>
+    <!-- Right Wing -->
+    <path d="M520 400 L520 180 L490 180 L490 210 L470 210 L470 250 L450 250 L450 400 Z"/>
+  </g>
+  <!-- Palm Trees -->
+  <g fill="#10AC84">
+    <path d="M120 400 Q140 300 160 220" stroke="#5F27CD" stroke-width="7" fill="none"/>
+    <ellipse cx="160" cy="220" rx="40" ry="12" transform="rotate(-30 160 220)"/>
+    <ellipse cx="160" cy="220" rx="40" ry="12" transform="rotate(30 160 220)"/>
+    <ellipse cx="160" cy="220" rx="40" ry="12" transform="rotate(90 160 220)"/>
+  </g>
+  <!-- Emerald Rice Terrace Foregrounds -->
+  <path d="M0 380 Q200 340 400 380 Q600 420 800 380 L800 500 L0 500 Z" fill="#10AC84"/>
+  <path d="M0 430 Q300 390 800 430 L800 500 L0 500 Z" fill="#1DD1A1"/>
+</svg>

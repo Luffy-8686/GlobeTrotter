@@ -36,16 +36,29 @@ export default function CitySearch() {
   }, [searchTerm]);
 
   const handleAddStop = async (cityId: string) => {
-    const start_date = new Date();
-    const end_date = new Date();
-    end_date.setDate(end_date.getDate() + 2);
-
     try {
+      // First, get the trip to know its dates
+      const tripRes = await axios.get(`http://localhost:5000/api/trips/${id}`);
+      const trip = tripRes.data;
+      
+      let start_date = new Date(trip.start_date);
+      let end_date = new Date(trip.end_date);
+      
+      // If there are existing stops, start the new stop where the last one ended
+      if (trip.stops && trip.stops.length > 0) {
+        const lastStop = trip.stops[trip.stops.length - 1];
+        start_date = new Date(lastStop.end_date);
+        end_date = new Date(lastStop.end_date);
+        end_date.setDate(end_date.getDate() + 2); // Default 2 nights
+      } else {
+        // If it's the first stop, make it span the whole trip initially
+      }
+
       await axios.post(`http://localhost:5000/api/trips/${id}/stops`, {
         city_id: cityId,
         start_date: start_date.toISOString(),
         end_date: end_date.toISOString(),
-        order_index: 0
+        order_index: trip.stops ? trip.stops.length : 0
       });
       toast.success('Destination added to your itinerary!');
       navigate(`/trips/${id}`);

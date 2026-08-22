@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- ============================================================ -->
+        <!-- DEMO TRIPS                                                    -->
+        <!-- ============================================================ -->
+
+        <!-- Trip 1: Grand European Discovery (Upcoming / Ongoing) -->
+        <record id="trip_europe_demo" model="gt.trip">
+            <field name="name">Grand European Discovery</field>
+            <field name="description">A dream journey through the iconic capitals of Europe — exploring Parisian art, Roman history, and Catalan culture.</field>
+            <field name="start_date" eval="(datetime.now() - timedelta(days=2)).strftime('%Y-%m-%d')"/>
+            <field name="end_date" eval="(datetime.now() + timedelta(days=8)).strftime('%Y-%m-%d')"/>
+            <field name="user_id" ref="base.user_admin"/>
+        </record>
+
+        <!-- Stop 1: Paris -->
+        <record id="stop_paris_demo" model="gt.stop">
+            <field name="trip_id" ref="trip_europe_demo"/>
+            <field name="city_id" ref="city_paris"/>
+            <field name="sequence">10</field>
+            <field name="arrival_date" eval="(datetime.now() - timedelta(days=2)).strftime('%Y-%m-%d')"/>
+            <field name="departure_date" eval="(datetime.now() + timedelta(days=1)).strftime('%Y-%m-%d')"/>
+            <field name="notes">Stay near Le Marais. Book museum passes in advance.</field>
+        </record>
+
+        <!-- Stop 1 Activities -->
+        <record id="sa_paris_1" model="gt.stop.activity">
+            <field name="stop_id" ref="stop_paris_demo"/>
+            <field name="activity_id" ref="act_paris_1"/>
+            <field name="day_index">1</field>
+            <field name="time_slot">morning</field>
+            <field name="sequence">10</field>
+        </record>
+        <record id="sa_paris_2" model="gt.stop.activity">
+            <field name="stop_id" ref="stop_paris_demo"/>
+            <field name="activity_id" ref="act_paris_2"/>
+            <field name="day_index">1</field>
+            <field name="time_slot">afternoon</field>
+            <field name="sequence">20</field>
+        </record>
+        <record id="sa_paris_3" model="gt.stop.activity">
+            <field name="stop_id" ref="stop_paris_demo"/>
+            <field name="activity_id" ref="act_paris_4"/>
+            <field name="day_index">2</field>
+            <field name="time_slot">evening</field>
+            <field name="sequence">30</field>
+        </record>
+
+        <!-- Stop 2: Rome -->
+        <record id="stop_rome_demo" model="gt.stop">
+            <field name="trip_id" ref="trip_europe_demo"/>
+            <field name="city_id" ref="city_rome"/>
+            <field name="sequence">20</field>
+            <field name="arrival_date" eval="(datetime.now() + timedelta(days=2)).strftime('%Y-%m-%d')"/>
+            <field name="departure_date" eval="(datetime.now() + timedelta(days=5)).strftime('%Y-%m-%d')"/>
+            <field name="notes">Train from Paris to Rome.</field>
+        </record>
+
+        <!-- Stop 2 Activities -->
+        <record id="sa_rome_1" model="gt.stop.activity">
+            <field name="stop_id" ref="stop_rome_demo"/>
+            <field name="activity_id" ref="act_rome_1"/>
+            <field name="day_index">3</field>
+            <field name="time_slot">morning</field>
+            <field name="sequence">10</field>
+        </record>
+        <record id="sa_rome_2" model="gt.stop.activity">
+            <field name="stop_id" ref="stop_rome_demo"/>
+            <field name="activity_id" ref="act_rome_2"/>
+            <field name="day_index">4</field>
+            <field name="time_slot">afternoon</field>
+            <field name="sequence">20</field>
+        </record>
+        <record id="sa_rome_3" model="gt.stop.activity">
+            <field name="stop_id" ref="stop_rome_demo"/>
+            <field name="activity_id" ref="act_rome_3"/>
+            <field name="day_index">4</field>
+            <field name="time_slot">evening</field>
+            <field name="sequence">30</field>
+        </record>
+
+        <!-- Stop 3: Barcelona -->
+        <record id="stop_bcn_demo" model="gt.stop">
+            <field name="trip_id" ref="trip_europe_demo"/>
+            <field name="city_id" ref="city_barcelona"/>
+            <field name="sequence">30</field>
+            <field name="arrival_date" eval="(datetime.now() + timedelta(days=6)).strftime('%Y-%m-%d')"/>
+            <field name="departure_date" eval="(datetime.now() + timedelta(days=8)).strftime('%Y-%m-%d')"/>
+        </record>
+
+        <!-- Stop 3 Activities -->
+        <record id="sa_bcn_1" model="gt.stop.activity">
+            <field name="stop_id" ref="stop_bcn_demo"/>
+            <field name="activity_id" ref="act_barcelona_1"/>
+            <field name="day_index">6</field>
+            <field name="time_slot">morning</field>
+            <field name="sequence">10</field>
+        </record>
+        <record id="sa_bcn_2" model="gt.stop.activity">
+            <field name="stop_id" ref="stop_bcn_demo"/>
+            <field name="activity_id" ref="act_barcelona_3"/>
+            <field name="day_index">7</field>
+            <field name="time_slot">evening</field>
+            <field name="sequence">20</field>
+        </record>
+
+        <!-- Trip 1 Expenses -->
+        <record id="exp_europe_flight" model="gt.expense">
+            <field name="trip_id" ref="trip_europe_demo"/>
+            <field name="name">International Flights (Round-trip)</field>
+            <field name="category">transport</field>
+            <field name="amount">45000</field>
+        </record>
+        <record id="exp_europe_hotel_paris" model="gt.expense">
+            <field name="trip_id" ref="trip_europe_demo"/>
+            <field name="name">Paris Boutique Hotel (3 nights)</field>
+            <field name="category">stay</field>
+            <field name="amount">24000</field>
+        </record>
+        <record id="exp_europe_hotel_rome" model="gt.expense">
+            <field name="trip_id" ref="trip_europe_demo"/>
+            <field name="name">Rome City Center Hotel (3 nights)</field>
+            <field name="category">stay</field>
+            <field name="amount">21000</field>
+        </record>
+        <record id="exp_europe_meals" model="gt.expense">
+            <field name="trip_id" ref="trip_europe_demo"/>
+            <field name="name">Dining &amp; Tapas budget</field>
+            <field name="category">meal</field>
+            <field name="amount">18000</field>
+        </record>
+
+        <!-- Trip 1 Public Share Link (Known token for instant testing) -->
+        <record id="share_europe_demo" model="gt.share.link">
+            <field name="trip_id" ref="trip_europe_demo"/>
+            <field name="token">demo-europe-2026</field>
+            <field name="is_active">True</field>
+            <field name="view_count">42</field>
+        </record>
+
+        <!-- Trip 2: Southeast Asia & Beyond (Upcoming) -->
+        <record id="trip_asia_demo" model="gt.trip">
+            <field name="name">Wonders of Asia: Tokyo &amp; Bali</field>
+            <field name="description">Contrasting ultra-modern Tokyo with the spiritual serenity of Bali's rice terraces and beaches.</field>
+            <field name="start_date" eval="(datetime.now() + timedelta(days=20)).strftime('%Y-%m-%d')"/>
+            <field name="end_date" eval="(datetime.now() + timedelta(days=32)).strftime('%Y-%m-%d')"/>
+            <field name="user_id" ref="base.user_admin"/>
+        </record>
+
+        <record id="stop_tokyo_demo" model="gt.stop">
+            <field name="trip_id" ref="trip_asia_demo"/>
+            <field name="city_id" ref="city_tokyo"/>
+            <field name="sequence">10</field>
+            <field name="arrival_date" eval="(datetime.now() + timedelta(days=20)).strftime('%Y-%m-%d')"/>
+            <field name="departure_date" eval="(datetime.now() + timedelta(days=26)).strftime('%Y-%m-%d')"/>
+        </record>
+
+        <record id="sa_tokyo_1" model="gt.stop.activity">
+            <field name="stop_id" ref="stop_tokyo_demo"/>
+            <field name="activity_id" ref="act_tokyo_1"/>
+            <field name="day_index">1</field>
+            <field name="time_slot">morning</field>
+            <field name="sequence">10</field>
+        </record>
+        <record id="sa_tokyo_2" model="gt.stop.activity">
+            <field name="stop_id" ref="stop_tokyo_demo"/>
+            <field name="activity_id" ref="act_tokyo_2"/>
+            <field name="day_index">2</field>
+            <field name="time_slot">afternoon</field>
+            <field name="sequence">20</field>
+        </record>
+
+        <record id="stop_bali_demo" model="gt.stop">
+            <field name="trip_id" ref="trip_asia_demo"/>
+            <field name="city_id" ref="city_bali"/>
+            <field name="sequence">20</field>
+            <field name="arrival_date" eval="(datetime.now() + timedelta(days=27)).strftime('%Y-%m-%d')"/>
+            <field name="departure_date" eval="(datetime.now() + timedelta(days=32)).strftime('%Y-%m-%d')"/>
+        </record>
+
+        <record id="sa_bali_1" model="gt.stop.activity">
+            <field name="stop_id" ref="stop_bali_demo"/>
+            <field name="activity_id" ref="act_bali_1"/>
+            <field name="day_index">1</field>
+            <field name="time_slot">morning</field>
+            <field name="sequence">10</field>
+        </record>
+        <record id="sa_bali_2" model="gt.stop.activity">
+            <field name="stop_id" ref="stop_bali_demo"/>
+            <field name="activity_id" ref="act_bali_2"/>
+            <field name="day_index">2</field>
+            <field name="time_slot">evening</field>
+            <field name="sequence">20</field>
+        </record>
+
+        <record id="share_asia_demo" model="gt.share.link">
+            <field name="trip_id" ref="trip_asia_demo"/>
+            <field name="token">demo-asia-wonders</field>
+            <field name="is_active">True</field>
+            <field name="view_count">18</field>
+        </record>
+
+    </data>
+</odoo>

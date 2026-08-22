@@ -1,0 +1,141 @@
+// =============================================================================
+// GlobeTrotter — Utility Classes
+// =============================================================================
+
+// ---------------------------------------------------------------------------
+// Spacing Utilities
+// ---------------------------------------------------------------------------
+@each $i, $val in (1: $gt-space-1, 2: $gt-space-2, 3: $gt-space-3, 4: $gt-space-4, 5: $gt-space-5, 6: $gt-space-6, 7: $gt-space-7, 8: $gt-space-8) {
+    .gt-mt-#{$i} { margin-top: $val; }
+    .gt-mb-#{$i} { margin-bottom: $val; }
+    .gt-ml-#{$i} { margin-left: $val; }
+    .gt-mr-#{$i} { margin-right: $val; }
+    .gt-mx-#{$i} { margin-left: $val; margin-right: $val; }
+    .gt-my-#{$i} { margin-top: $val; margin-bottom: $val; }
+    .gt-pt-#{$i} { padding-top: $val; }
+    .gt-pb-#{$i} { padding-bottom: $val; }
+    .gt-pl-#{$i} { padding-left: $val; }
+    .gt-pr-#{$i} { padding-right: $val; }
+    .gt-px-#{$i} { padding-left: $val; padding-right: $val; }
+    .gt-py-#{$i} { padding-top: $val; padding-bottom: $val; }
+    .gt-p-#{$i} { padding: $val; }
+    .gt-m-#{$i} { margin: $val; }
+}
+
+.gt-mt-0 { margin-top: 0; }
+.gt-mb-0 { margin-bottom: 0; }
+.gt-ml-0 { margin-left: 0; }
+.gt-mr-0 { margin-right: 0; }
+.gt-p-0 { padding: 0; }
+.gt-m-0 { margin: 0; }
+
+// ---------------------------------------------------------------------------
+// Text Utilities
+// ---------------------------------------------------------------------------
+.gt-text-center { text-align: center; }
+.gt-text-left { text-align: left; }
+.gt-text-right { text-align: right; }
+.gt-text-truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.gt-text-wrap { white-space: normal; }
+.gt-text-bold { font-weight: 700; }
+.gt-text-semibold { font-weight: 600; }
+.gt-text-medium { font-weight: 500; }
+.gt-text-normal { font-weight: 400; }
+.gt-text-primary { color: var(--gt-primary); }
+.gt-text-secondary { color: var(--gt-secondary); }
+.gt-text-error { color: var(--gt-error); }
+.gt-text-warning { color: var(--gt-warning); }
+.gt-text-success { color: var(--gt-success); }
+
+// ---------------------------------------------------------------------------
+// Display Utilities
+// ---------------------------------------------------------------------------
+.gt-hidden { display: none !important; }
+.gt-block { display: block; }
+.gt-inline-block { display: inline-block; }
+.gt-inline { display: inline; }
+
+@media (max-width: $gt-bp-mobile) {
+    .gt-hidden-mobile { display: none !important; }
+}
+@media (min-width: $gt-bp-mobile) and (max-width: $gt-bp-tablet-sm - 1) {
+    .gt-hidden-tablet { display: none !important; }
+}
+@media (min-width: $gt-bp-tablet-sm) {
+    .gt-hidden-desktop { display: none !important; }
+}
+
+// ---------------------------------------------------------------------------
+// Width / Height
+// ---------------------------------------------------------------------------
+.gt-w-full { width: 100%; }
+.gt-h-full { height: 100%; }
+.gt-min-h-screen { min-height: 100vh; }
+
+// ---------------------------------------------------------------------------
+// Border Utilities
+// ---------------------------------------------------------------------------
+.gt-border { border: 1px solid var(--gt-border); }
+.gt-border-top { border-top: 1px solid var(--gt-border); }
+.gt-border-bottom { border-bottom: 1px solid var(--gt-border); }
+.gt-rounded-sm { border-radius: var(--gt-radius-sm); }
+.gt-rounded-md { border-radius: var(--gt-radius-md); }
+.gt-rounded-lg { border-radius: var(--gt-radius-lg); }
+.gt-rounded-full { border-radius: 50%; }
+
+// ---------------------------------------------------------------------------
+// Accessibility
+// ---------------------------------------------------------------------------
+.gt-sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+// Focus-visible utility (for custom focus rings)
+.gt-focus-ring {
+    &:focus-visible {
+        outline: 2px solid var(--gt-secondary);
+        outline-offset: 2px;
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Cursor
+// ---------------------------------------------------------------------------
+.gt-cursor-pointer { cursor: pointer; }
+.gt-cursor-grab { cursor: grab; }
+.gt-cursor-not-allowed { cursor: not-allowed; }
+
+// ---------------------------------------------------------------------------
+// Overflow
+// ---------------------------------------------------------------------------
+.gt-overflow-hidden { overflow: hidden; }
+.gt-overflow-auto { overflow: auto; }
+.gt-overflow-x-auto {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+// ---------------------------------------------------------------------------
+// Position
+// ---------------------------------------------------------------------------
+.gt-relative { position: relative; }
+.gt-absolute { position: absolute; }
+.gt-sticky { position: sticky; }
+
+// ---------------------------------------------------------------------------
+// Opacity
+// ---------------------------------------------------------------------------
+.gt-opacity-50 { opacity: 0.5; }
+.gt-opacity-75 { opacity: 0.75; }

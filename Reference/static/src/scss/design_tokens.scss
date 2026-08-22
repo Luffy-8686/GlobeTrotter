@@ -1,0 +1,167 @@
+// =============================================================================
+// GlobeTrotter — CSS Custom Properties (Design Tokens)
+// =============================================================================
+// Applied to :root so all templates can reference tokens via var(--gt-xxx).
+// =============================================================================
+
+:root {
+    // -------------------------------------------------------------------------
+    // Color Tokens
+    // -------------------------------------------------------------------------
+    --gt-primary: #{$gt-primary};
+    --gt-primary-hover: #{$gt-primary-hover};
+    --gt-primary-light: rgba(255, 90, 95, 0.15);
+    --gt-secondary: #{$gt-secondary};
+    --gt-secondary-hover: #{$gt-secondary-hover};
+    --gt-secondary-light: rgba(0, 166, 153, 0.12);
+    --gt-bg: #{$gt-bg};
+    --gt-surface: #{$gt-surface};
+    --gt-surface-hover: #{$gt-surface-hover};
+    --gt-border: #{$gt-border};
+    --gt-text: #{$gt-text};
+    --gt-text-muted: #{$gt-text-muted};
+    --gt-success: #{$gt-success};
+    --gt-warning: #{$gt-warning};
+    --gt-error: #{$gt-error};
+    --gt-scrim: rgba(0, 0, 0, 0.4);
+
+    // -------------------------------------------------------------------------
+    // Typography Tokens
+    // -------------------------------------------------------------------------
+    --gt-font-heading: #{$gt-font-heading};
+    --gt-font-body: #{$gt-font-body};
+
+    --gt-text-h1-size: 32px;
+    --gt-text-h1-lh: 40px;
+    --gt-text-h1-weight: 700;
+
+    --gt-text-h2-size: 24px;
+    --gt-text-h2-lh: 32px;
+    --gt-text-h2-weight: 600;
+
+    --gt-text-h3-size: 18px;
+    --gt-text-h3-lh: 26px;
+    --gt-text-h3-weight: 600;
+
+    --gt-text-body-size: 15px;
+    --gt-text-body-lh: 22px;
+    --gt-text-body-weight: 400;
+
+    --gt-text-small-size: 13px;
+    --gt-text-small-lh: 18px;
+    --gt-text-small-weight: 400;
+
+    --gt-text-button-size: 15px;
+    --gt-text-button-lh: 20px;
+    --gt-text-button-weight: 600;
+
+    // -------------------------------------------------------------------------
+    // Spacing Tokens
+    // -------------------------------------------------------------------------
+    --gt-space-1: #{$gt-space-1};
+    --gt-space-2: #{$gt-space-2};
+    --gt-space-3: #{$gt-space-3};
+    --gt-space-4: #{$gt-space-4};
+    --gt-space-5: #{$gt-space-5};
+    --gt-space-6: #{$gt-space-6};
+    --gt-space-7: #{$gt-space-7};
+    --gt-space-8: #{$gt-space-8};
+
+    // -------------------------------------------------------------------------
+    // Border Radius Tokens
+    // -------------------------------------------------------------------------
+    --gt-radius-sm: #{$gt-radius-sm};
+    --gt-radius-md: #{$gt-radius-md};
+    --gt-radius-lg: #{$gt-radius-lg};
+
+    // -------------------------------------------------------------------------
+    // Shadow Tokens
+    // -------------------------------------------------------------------------
+    --gt-shadow-card: #{$gt-shadow-card};
+    --gt-shadow-hover: #{$gt-shadow-hover};
+    --gt-shadow-modal: #{$gt-shadow-modal};
+
+    // -------------------------------------------------------------------------
+    // Transition Tokens
+    // -------------------------------------------------------------------------
+    --gt-transition-fast: #{$gt-transition-fast};
+    --gt-transition-base: #{$gt-transition-base};
+    --gt-transition-modal: #{$gt-transition-modal};
+    --gt-transition-drag: #{$gt-transition-drag};
+
+    // -------------------------------------------------------------------------
+    // Layout Tokens
+    // -------------------------------------------------------------------------
+    --gt-content-max-width: #{$gt-content-max-width};
+    --gt-gutter: #{$gt-gutter};
+}
+
+// =============================================================================
+// Base Typography Styles
+// =============================================================================
+.gt-page {
+    font-family: var(--gt-font-body);
+    font-size: var(--gt-text-body-size);
+    line-height: var(--gt-text-body-lh);
+    font-weight: var(--gt-text-body-weight);
+    color: var(--gt-text);
+    background-color: var(--gt-bg);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.gt-h1 {
+    font-family: var(--gt-font-heading);
+    font-size: var(--gt-text-h1-size);
+    line-height: var(--gt-text-h1-lh);
+    font-weight: var(--gt-text-h1-weight);
+    color: var(--gt-text);
+    margin: 0 0 var(--gt-space-3) 0;
+}
+
+.gt-h2 {
+    font-family: var(--gt-font-heading);
+    font-size: var(--gt-text-h2-size);
+    line-height: var(--gt-text-h2-lh);
+    font-weight: var(--gt-text-h2-weight);
+    color: var(--gt-text);
+    margin: 0 0 var(--gt-space-2) 0;
+}
+
+.gt-h3 {
+    font-family: var(--gt-font-heading);
+    font-size: var(--gt-text-h3-size);
+    line-height: var(--gt-text-h3-lh);
+    font-weight: var(--gt-text-h3-weight);
+    color: var(--gt-text);
+    margin: 0 0 var(--gt-space-1) 0;
+}
+
+.gt-text-body {
+    font-size: var(--gt-text-body-size);
+    line-height: var(--gt-text-body-lh);
+    font-weight: var(--gt-text-body-weight);
+}
+
+.gt-text-small {
+    font-size: var(--gt-text-small-size);
+    line-height: var(--gt-text-small-lh);
+    font-weight: var(--gt-text-small-weight);
+    color: var(--gt-text-muted);
+}
+
+.gt-text-muted {
+    color: var(--gt-text-muted);
+}
+
+// =============================================================================
+// Reduced Motion
+// =============================================================================
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}

@@ -6,6 +6,7 @@ import authRoutes from './routes/authRoutes';
 import tripRoutes from './routes/tripRoutes';
 import cityRoutes from './routes/cityRoutes';
 import activityRoutes from './routes/activityRoutes';
+import adminRoutes from './routes/adminRoutes';
 
 dotenv.config();
 
@@ -29,6 +30,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/trips', tripRoutes);
 app.use('/api/cities', cityRoutes);
 app.use('/api/activities', activityRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Global Error Handler
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {

@@ -150,7 +150,9 @@ export default function TripBudget() {
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">Date</label>
             <input 
-              type="date" 
+              type="date"
+              min={trip.start_date.split('T')[0]}
+              max={trip.end_date.split('T')[0]}
               className="rounded-lg border-slate-300 py-2 px-3 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
               value={newItem.date} onChange={e => setNewItem({...newItem, date: e.target.value})}
             />

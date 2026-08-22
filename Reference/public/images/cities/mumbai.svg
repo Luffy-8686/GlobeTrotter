@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="100%" height="100%">
+  <defs>
+    <linearGradient id="mumSky" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FF9F43"/>
+      <stop offset="60%" stop-color="#EE5253"/>
+      <stop offset="100%" stop-color="#0ABDE3"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="500" fill="url(#mumSky)"/>
+  <!-- Gateway of India Arch -->
+  <g fill="#2C3A47">
+    <rect x="260" y="200" width="280" height="190"/>
+    <path d="M340 390 L340 280 Q400 220 460 280 L460 390 Z" fill="#FF9F43"/>
+    <!-- Domes -->
+    <circle cx="400" cy="180" r="35"/>
+    <circle cx="280" cy="190" r="20"/>
+    <circle cx="520" cy="190" r="20"/>
+  </g>
+  <!-- Arabian Sea Water -->
+  <rect y="390" width="800" height="110" fill="#10AC84"/>
+</svg>

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ================================================================== -->
+    <!-- Community Feed (Screen 13)                                          -->
+    <!-- ================================================================== -->
+    <template id="gt_community_page" name="GlobeTrotter Community">
+        <t t-call="globetrotter.gt_portal_layout">
+            <h1 class="gt-h1">Community 🌐</h1>
+            <p class="gt-text-muted gt-mb-4">Discover shared trip experiences from travellers around the world.</p>
+
+            <t t-if="shared_trips">
+                <div class="gt-grid">
+                    <t t-foreach="shared_trips" t-as="trip">
+                        <div class="gt-card gt-community-card">
+                            <!-- Author row -->
+                            <div class="gt-community-card-author">
+                                <div class="gt-avatar gt-avatar--sm">
+                                    <t t-if="trip.user_id.image_128">
+                                        <img t-att-src="'/web/image/res.users/%s/image_128' % trip.user_id.id" alt=""/>
+                                    </t>
+                                    <t t-else="">
+                                        <t t-esc="(trip.user_id.name or 'U')[0].upper()"/>
+                                    </t>
+                                </div>
+                                <div>
+                                    <span class="gt-community-author-name"><t t-esc="trip.user_id.name"/></span>
+                                </div>
+                            </div>
+                            <!-- Trip card content -->
+                            <a t-att-href="'/trip/shared/%s' % trip.share_link_ids[0].token if trip.share_link_ids else '#'"
+                               style="text-decoration:none;color:inherit;">
+                                <t t-if="trip.cover_image">
+                                    <img t-att-src="'/web/image/gt.trip/%s/cover_image' % trip.id"
+                                         class="gt-card-image" t-att-alt="trip.name" loading="lazy"/>
+                                </t>
+                                <t t-else="">
+                                    <div class="gt-card-image gt-img-placeholder">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+                                    </div>
+                                </t>
+                            </a>
+                            <div class="gt-card-body">
+                                <h3 class="gt-card-title"><t t-esc="trip.name"/></h3>
+                                <div class="gt-card-meta">
+                                    <span><t t-esc="trip.start_date"/> — <t t-esc="trip.end_date"/></span>
+                                    <span>·</span>
+                                    <span><t t-esc="trip.destination_count"/> destinations</span>
+                                </div>
+                                <t t-if="trip.description">
+                                    <p class="gt-text-small gt-text-muted gt-mt-1" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
+                                        <t t-esc="trip.description"/>
+                                    </p>
+                                </t>
+                            </div>
+                        </div>
+                    </t>
+                </div>
+            </t>
+            <t t-else="">
+                <div class="gt-empty-state">
+                    <svg class="gt-empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    <h3 class="gt-empty-state-title">No shared trips yet</h3>
+                    <p class="gt-empty-state-message">Be the first! Share your trip and inspire other travellers.</p>
+                    <a href="/globetrotter/trips" class="gt-btn gt-btn--primary">View My Trips</a>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>

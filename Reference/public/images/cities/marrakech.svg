@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="100%" height="100%">
+  <defs>
+    <linearGradient id="marSky" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#B53471"/>
+      <stop offset="60%" stop-color="#ED4C67"/>
+      <stop offset="100%" stop-color="#F79F1F"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="500" fill="url(#marSky)"/>
+  <!-- Koutoubia Minaret & Riad Silhouettes -->
+  <g fill="#833471">
+    <!-- Minaret -->
+    <rect x="360" y="140" width="80" height="260"/>
+    <polygon points="350,140 400,80 450,140"/>
+    <rect x="395" y="60" width="10" height="20"/>
+    <!-- Medina Terracotta Walls -->
+    <rect x="80" y="300" width="250" height="100"/>
+    <rect x="470" y="320" width="260" height="80"/>
+  </g>
+  <!-- Palms -->
+  <polygon points="160,400 150,260 170,260" fill="#009432"/>
+  <polygon points="620,400 610,280 630,280" fill="#009432"/>
+  <rect y="400" width="800" height="100" fill="#5758BB"/>
+</svg>

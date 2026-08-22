@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ================================================================== -->
+    <!-- Login Page (Screen 1)                                               -->
+    <!-- ================================================================== -->
+    <template id="gt_login_page" name="GlobeTrotter Login">
+        <t t-call="portal.frontend_layout">
+            <div class="gt-page gt-auth-page">
+                <div class="gt-auth-hero">
+                    <div class="gt-auth-hero-content">
+                        <h1>🌍 GlobeTrotter</h1>
+                        <p>Plan your dream trips, discover amazing destinations, and share your adventures with the world.</p>
+                    </div>
+                </div>
+                <div class="gt-auth-form-panel">
+                    <div class="gt-auth-form">
+                        <h2 class="gt-auth-form-title">Welcome back</h2>
+                        <p class="gt-auth-form-subtitle">Sign in to continue planning your next adventure</p>
+
+                        <t t-if="error">
+                            <div class="gt-toast gt-toast--error gt-mb-3" style="position:static;">
+                                <span t-esc="error"/>
+                            </div>
+                        </t>
+
+                        <form action="/web/login" method="post">
+                            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                            <input type="hidden" name="redirect" value="/globetrotter"/>
+
+                            <div class="gt-form-group">
+                                <label class="gt-label" for="login">Email <span class="gt-required">*</span></label>
+                                <input type="email" class="gt-input" id="login" name="login"
+                                       placeholder="you@example.com" required="required" autofocus="autofocus"/>
+                            </div>
+
+                            <div class="gt-form-group">
+                                <label class="gt-label" for="password">Password <span class="gt-required">*</span></label>
+                                <input type="password" class="gt-input" id="password" name="password"
+                                       placeholder="Enter your password" required="required"/>
+                            </div>
+
+                            <div class="gt-flex gt-justify-between gt-items-center gt-mb-3">
+                                <label class="gt-flex gt-items-center gt-gap-1" style="cursor:pointer;">
+                                    <input type="checkbox" name="remember" value="1"/>
+                                    <span class="gt-text-small">Remember me</span>
+                                </label>
+                                <a href="/web/reset_password" class="gt-text-small" style="color:var(--gt-secondary);">Forgot password?</a>
+                            </div>
+
+                            <button type="submit" class="gt-btn gt-btn--primary gt-btn--full gt-btn--lg">Sign In</button>
+                        </form>
+
+                        <p class="gt-auth-footer">
+                            Don't have an account? <a href="/globetrotter/signup">Sign up for free</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <!-- ================================================================== -->
+    <!-- Signup Page                                                         -->
+    <!-- ================================================================== -->
+    <template id="gt_signup_page" name="GlobeTrotter Signup">
+        <t t-call="portal.frontend_layout">
+            <div class="gt-page gt-auth-page">
+                <div class="gt-auth-hero">
+                    <div class="gt-auth-hero-content">
+                        <h1>🌍 GlobeTrotter</h1>
+                        <p>Start planning unforgettable journeys. Create your free account today.</p>
+                    </div>
+                </div>
+                <div class="gt-auth-form-panel">
+                    <div class="gt-auth-form">
+                        <h2 class="gt-auth-form-title">Create an account</h2>
+                        <p class="gt-auth-form-subtitle">Join thousands of travellers worldwide</p>
+
+                        <t t-if="error">
+                            <div class="gt-toast gt-toast--error gt-mb-3" style="position:static;">
+                                <span t-esc="error"/>
+                            </div>
+                        </t>
+
+                        <form action="/web/signup" method="post">
+                            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                            <input type="hidden" name="redirect" value="/globetrotter"/>
+
+                            <div class="gt-form-group">
+                                <label class="gt-label" for="name">Full Name <span class="gt-required">*</span></label>
+                                <input type="text" class="gt-input" id="name" name="name"
+                                       placeholder="John Doe" required="required"/>
+                            </div>
+
+                            <div class="gt-form-group">
+                                <label class="gt-label" for="login">Email <span class="gt-required">*</span></label>
+                                <input type="email" class="gt-input" id="login" name="login"
+                                       placeholder="you@example.com" required="required"/>
+                            </div>
+
+                            <div class="gt-form-group">
+                                <label class="gt-label" for="password">Password <span class="gt-required">*</span></label>
+                                <input type="password" class="gt-input" id="password" name="password"
+                                       placeholder="Choose a strong password" required="required"/>
+                            </div>
+
+                            <div class="gt-form-group">
+                                <label class="gt-label" for="confirm_password">Confirm Password <span class="gt-required">*</span></label>
+                                <input type="password" class="gt-input" id="confirm_password" name="confirm_password"
+                                       placeholder="Re-enter your password" required="required"/>
+                            </div>
+
+                            <button type="submit" class="gt-btn gt-btn--primary gt-btn--full gt-btn--lg gt-mt-2">Create Account</button>
+                        </form>
+
+                        <p class="gt-auth-footer">
+                            Already have an account? <a href="/globetrotter/login">Sign in</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-toastify';
-import { ArrowLeft, Plus, Clock, DollarSign, MapPin } from 'lucide-react';
+import { ArrowLeft, Plus, Clock, DollarSign, MapPin, Calendar, Check, X } from 'lucide-react';
 
 export default function ActivitySearch() {
   const { id, stopId } = useParams<{ id: string, stopId: string }>();
@@ -10,11 +10,15 @@ export default function ActivitySearch() {
   const [activities, setActivities] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [cityName, setCityName] = useState('');
+  const [stopDates, setStopDates] = useState({ start: '', end: '' });
+
+  // Scheduler state
+  const [selectedActivity, setSelectedActivity] = useState<string | null>(null);
+  const [scheduleData, setScheduleData] = useState({ date: '', time: '' });
 
   useEffect(() => {
     const fetchActivities = async () => {
       try {
-        // First get the trip to find the stop's city_id
         const tripRes = await axios.get(`http://localhost:5000/api/trips/${id}`);
         const trip = tripRes.data;
         const stop = trip.stops.find((s: any) => s.id === stopId);
@@ -25,8 +29,11 @@ export default function ActivitySearch() {
         }
         
         setCityName(stop.city.name);
+        setStopDates({
+          start: new Date(stop.start_date).toISOString().split('T')[0],
+          end: new Date(stop.end_date).toISOString().split('T')[0]
+        });
 
-        // Fetch activities for that city
         const res = await axios.get(`http://localhost:5000/api/activities?city_id=${stop.city_id}`);
         setActivities(res.data);
       } catch (error) {
@@ -39,10 +46,44 @@ export default function ActivitySearch() {
     fetchActivities();
   }, [id, stopId]);
 
+  const getAvailableSlots = (act: any) => {
+    const name = act.name.toLowerCase();
+    const duration = act.duration_minutes;
+    if (duration >= 300) return [{ label: 'Full Day (09:00)', value: '09:00' }];
+    
+    let slots = [
+      { label: 'Morning (09:00)', value: '09:00' },
+      { label: 'Afternoon (14:00)', value: '14:00' },
+      { label: 'Evening (17:00)', value: '17:00' },
+      { label: 'Night (20:00)', value: '20:00' }
+    ];
+
+    if (name.includes('night')) return [slots[3]];
+    if (name.includes('dinner')) return [slots[2], slots[3]];
+    if (name.includes('sunset')) return [slots[2]];
+    if (name.includes('breakfast')) return [slots[0]];
+    if (name.includes('lunch')) return [slots[1]];
+
+    return slots;
+  };
+
+  const handleOpenScheduler = (act: any) => {
+    const slots = getAvailableSlots(act);
+    setScheduleData({ date: stopDates.start, time: slots[0].value });
+    setSelectedActivity(act.id);
+  };
+
   const handleAddActivity = async (activityId: string) => {
+    if (!scheduleData.date || !scheduleData.time) {
+      toast.error('Please select a date and time slot.');
+      return;
+    }
+    
     try {
       await axios.post(`http://localhost:5000/api/trips/${id}/stops/${stopId}/activities`, {
-        activity_id: activityId
+        activity_id: activityId,
+        scheduled_date: scheduleData.date,
+        scheduled_time: scheduleData.time
       });
       toast.success('Activity added to your itinerary!');
       navigate(`/trips/${id}`);
@@ -83,45 +124,92 @@ export default function ActivitySearch() {
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {activities.map((act) => (
-            <div key={act.id} className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col group hover:-translate-y-1 hover:shadow-md transition-all">
-              <div className="h-48 relative overflow-hidden bg-slate-100">
-                {act.image_url ? (
-                  <img src={act.image_url} alt={act.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/600x400?text=No+Image' }} />
-                ) : (
-                  <div className="w-full h-full bg-slate-200" />
-                )}
-                <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-lg text-xs font-bold text-slate-900 shadow-sm uppercase tracking-wider">
-                  {act.category}
-                </div>
-              </div>
-              <div className="p-5 flex-1 flex flex-col">
-                <h3 className="text-lg font-bold text-slate-900 mb-1 leading-tight">{act.name}</h3>
-                <p className="text-sm text-slate-500 mb-4 line-clamp-2">{act.description}</p>
-                
-                <div className="mt-auto">
-                  <div className="flex justify-between items-center mb-4 text-sm font-semibold">
-                    <span className="flex items-center text-slate-600 bg-slate-100 px-2 py-1 rounded-md">
-                      <Clock className="mr-1.5 h-4 w-4" />
-                      {act.duration_minutes} min
-                    </span>
-                    <span className="flex items-center text-emerald-700 bg-emerald-50 px-2 py-1 rounded-md">
-                      <DollarSign className="h-4 w-4" />
-                      {act.cost.toFixed(2)}
-                    </span>
+          {activities.map((act) => {
+            const isSelected = selectedActivity === act.id;
+            const availableSlots = getAvailableSlots(act);
+            
+            return (
+              <div key={act.id} className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col group hover:-translate-y-1 hover:shadow-md transition-all">
+                <div className="h-48 relative overflow-hidden bg-slate-100">
+                  {act.image_url ? (
+                    <img src={act.image_url} alt={act.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/600x400?text=No+Image' }} />
+                  ) : (
+                    <div className="w-full h-full bg-slate-200" />
+                  )}
+                  <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-lg text-xs font-bold text-slate-900 shadow-sm uppercase tracking-wider">
+                    {act.category}
                   </div>
+                </div>
+                <div className="p-5 flex-1 flex flex-col">
+                  <h3 className="text-lg font-bold text-slate-900 mb-1 leading-tight">{act.name}</h3>
+                  <p className="text-sm text-slate-500 mb-4 line-clamp-2">{act.description}</p>
                   
-                  <button
-                    onClick={() => handleAddActivity(act.id)}
-                    className="w-full flex justify-center items-center py-2.5 px-4 border border-transparent rounded-xl shadow-sm text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors"
-                  >
-                    <Plus className="-ml-1 mr-2 h-4 w-4" />
-                    Add Activity
-                  </button>
+                  <div className="mt-auto">
+                    <div className="flex justify-between items-center mb-4 text-sm font-semibold">
+                      <span className="flex items-center text-slate-600 bg-slate-100 px-2 py-1 rounded-md">
+                        <Clock className="mr-1.5 h-4 w-4" />
+                        {act.duration_minutes} min
+                      </span>
+                      <span className="flex items-center text-emerald-700 bg-emerald-50 px-2 py-1 rounded-md">
+                        <DollarSign className="h-4 w-4" />
+                        {act.cost.toFixed(2)}
+                      </span>
+                    </div>
+                    
+                    {isSelected ? (
+                      <div className="bg-indigo-50 p-4 rounded-xl border border-indigo-100 space-y-3 animate-in fade-in slide-in-from-bottom-2">
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="text-xs font-bold text-indigo-800 uppercase tracking-wider">Schedule Activity</span>
+                          <button onClick={() => setSelectedActivity(null)} className="text-indigo-400 hover:text-indigo-600"><X className="h-4 w-4" /></button>
+                        </div>
+                        
+                        <div>
+                          <label className="block text-xs font-medium text-slate-600 mb-1">Select Date</label>
+                          <input 
+                            type="date"
+                            min={stopDates.start}
+                            max={stopDates.end}
+                            value={scheduleData.date}
+                            onChange={(e) => setScheduleData({...scheduleData, date: e.target.value})}
+                            className="w-full text-sm border-slate-300 rounded-lg focus:ring-indigo-500 py-2"
+                          />
+                        </div>
+                        
+                        <div>
+                          <label className="block text-xs font-medium text-slate-600 mb-1">Select Time Slot</label>
+                          <select 
+                            value={scheduleData.time}
+                            onChange={(e) => setScheduleData({...scheduleData, time: e.target.value})}
+                            className="w-full text-sm border-slate-300 rounded-lg focus:ring-indigo-500 py-2 bg-white"
+                          >
+                            {availableSlots.map(slot => (
+                              <option key={slot.value} value={slot.value}>{slot.label}</option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <button
+                          onClick={() => handleAddActivity(act.id)}
+                          className="w-full flex justify-center items-center py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors mt-2"
+                        >
+                          <Check className="-ml-1 mr-2 h-4 w-4" />
+                          Confirm & Add
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => handleOpenScheduler(act)}
+                        className="w-full flex justify-center items-center py-2.5 px-4 border border-transparent rounded-xl shadow-sm text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors"
+                      >
+                        <Calendar className="-ml-1 mr-2 h-4 w-4" />
+                        Schedule Activity
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

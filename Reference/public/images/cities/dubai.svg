@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="100%" height="100%">
+  <defs>
+    <linearGradient id="dubaiSky" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1E272E"/>
+      <stop offset="50%" stop-color="#485460"/>
+      <stop offset="100%" stop-color="#D2DAE2"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="500" fill="url(#dubaiSky)"/>
+  <!-- Stars -->
+  <circle cx="150" cy="80" r="2" fill="#FFF"/><circle cx="280" cy="60" r="2" fill="#FFF"/><circle cx="650" cy="90" r="2" fill="#FFF"/>
+  <!-- Burj Khalifa Tower -->
+  <g fill="#00D2D3">
+    <!-- Base -->
+    <rect x="360" y="260" width="80" height="160"/>
+    <!-- Tier 2 -->
+    <rect x="375" y="160" width="50" height="100"/>
+    <!-- Tier 3 -->
+    <rect x="388" y="80" width="24" height="80"/>
+    <!-- Spire -->
+    <line x1="400" y1="80" x2="400" y2="15" stroke="#00D2D3" stroke-width="4"/>
+  </g>
+  <!-- Burj Al Arab Silhouette -->
+  <path d="M160 420 L160 260 Q240 320 160 420 Z" fill="#54A0FF"/>
+  <!-- Surrounding Skyscrapers -->
+  <g fill="#2C3E50">
+    <rect x="220" y="240" width="50" height="180"/>
+    <rect x="290" y="200" width="60" height="220"/>
+    <rect x="455" y="210" width="55" height="210"/>
+    <rect x="530" y="250" width="65" height="170"/>
+    <rect x="620" y="280" width="70" height="140"/>
+  </g>
+  <!-- Golden Desert Dunes -->
+  <path d="M0 420 Q200 390 450 430 Q650 400 800 420 L800 500 L0 500 Z" fill="#FF9F43"/>
+</svg>

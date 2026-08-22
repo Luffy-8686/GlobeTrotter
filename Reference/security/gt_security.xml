@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ============================================================ -->
+    <!-- GlobeTrotter Module Category                                  -->
+    <!-- ============================================================ -->
+    <record id="module_category_globetrotter" model="ir.module.category">
+        <field name="name">GlobeTrotter</field>
+        <field name="description">Travel Planning Platform</field>
+        <field name="sequence">100</field>
+    </record>
+
+    <!-- ============================================================ -->
+    <!-- Security Groups                                               -->
+    <!-- ============================================================ -->
+
+    <!-- Standard User Group (portal users who plan trips) -->
+    <record id="group_user" model="res.groups">
+        <field name="name">User</field>
+        <field name="category_id" ref="module_category_globetrotter"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_portal'))]"/>
+        <field name="comment">GlobeTrotter users who can create and manage their own trips.</field>
+    </record>
+
+    <!-- Admin Group (full access, analytics, manage all trips) -->
+    <record id="group_admin" model="res.groups">
+        <field name="name">Admin</field>
+        <field name="category_id" ref="module_category_globetrotter"/>
+        <field name="implied_ids" eval="[(4, ref('globetrotter.group_user'))]"/>
+        <field name="users" eval="[(4, ref('base.user_admin'))]"/>
+        <field name="comment">GlobeTrotter admins with full access to all trips, analytics, and user management.</field>
+    </record>
+
+    <!-- ============================================================ -->
+    <!-- Record Rules                                                  -->
+    <!-- ============================================================ -->
+
+    <!-- Users can only see their own trips -->
+    <record id="gt_trip_user_rule" model="ir.rule">
+        <field name="name">GlobeTrotter: Users see own trips only</field>
+        <field name="model_id" ref="model_gt_trip"/>
+        <field name="domain_force">[('user_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('globetrotter.group_user'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+
+    <!-- Admins see all trips -->
+    <record id="gt_trip_admin_rule" model="ir.rule">
+        <field name="name">GlobeTrotter: Admins see all trips</field>
+        <field name="model_id" ref="model_gt_trip"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('globetrotter.group_admin'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+
+    <!-- Users see only stops belonging to their trips -->
+    <record id="gt_stop_user_rule" model="ir.rule">
+        <field name="name">GlobeTrotter: Users see own stops only</field>
+        <field name="model_id" ref="model_gt_stop"/>
+        <field name="domain_force">[('trip_id.user_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('globetrotter.group_user'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+
+    <!-- Users see only stop activities belonging to their trips -->
+    <record id="gt_stop_activity_user_rule" model="ir.rule">
+        <field name="name">GlobeTrotter: Users see own stop activities only</field>
+        <field name="model_id" ref="model_gt_stop_activity"/>
+        <field name="domain_force">[('stop_id.trip_id.user_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('globetrotter.group_user'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+
+    <!-- Users see only expenses belonging to their trips -->
+    <record id="gt_expense_user_rule" model="ir.rule">
+        <field name="name">GlobeTrotter: Users see own expenses only</field>
+        <field name="model_id" ref="model_gt_expense"/>
+        <field name="domain_force">[('trip_id.user_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('globetrotter.group_user'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+
+    <!-- Users see only share links belonging to their trips -->
+    <record id="gt_share_link_user_rule" model="ir.rule">
+        <field name="name">GlobeTrotter: Users see own share links only</field>
+        <field name="model_id" ref="model_gt_share_link"/>
+        <field name="domain_force">[('trip_id.user_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('globetrotter.group_user'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+
+    <!-- Cities and Activities are public master data — no record rules needed -->
+
+</odoo>

@@ -1,0 +1,8 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="globetrotter.Tabs">
+        <div class="gt-tabs">
+            <!-- Tabs component template -->
+        </div>
+    </t>
+</templates>

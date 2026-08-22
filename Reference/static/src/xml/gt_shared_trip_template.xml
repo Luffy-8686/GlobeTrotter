@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ================================================================== -->
+    <!-- Shared/Public Trip View (Screen 11)                                 -->
+    <!-- ================================================================== -->
+    <template id="gt_shared_trip_page" name="GlobeTrotter Shared Trip">
+        <t t-call="portal.frontend_layout">
+            <div class="gt-page gt-shared-page">
+                <div class="gt-container">
+                    <!-- Header -->
+                    <div class="gt-shared-header">
+                        <div class="gt-flex gt-justify-center gt-mb-2">
+                            <div class="gt-avatar gt-avatar--lg">
+                                <t t-if="trip.user_id.image_128">
+                                    <img t-att-src="'/web/image/res.users/%s/image_128' % trip.user_id.id" alt=""/>
+                                </t>
+                                <t t-else="">
+                                    <t t-esc="(trip.user_id.name or 'U')[0].upper()"/>
+                                </t>
+                            </div>
+                        </div>
+                        <p class="gt-text-small gt-text-muted">
+                            Shared by <strong><t t-esc="trip.user_id.name"/></strong>
+                        </p>
+                        <h1 class="gt-shared-trip-name"><t t-esc="trip.name"/></h1>
+                        <div class="gt-shared-meta">
+                            <span>📅 <t t-esc="trip.start_date"/> — <t t-esc="trip.end_date"/></span>
+                            <span>📍 <t t-esc="trip.destination_count"/> destinations</span>
+                            <span>💰 ₹<t t-esc="'{:,.0f}'.format(trip.total_budget)"/></span>
+                        </div>
+                        <t t-if="trip.description">
+                            <p class="gt-text-body gt-mt-2" style="max-width:600px;margin-left:auto;margin-right:auto;">
+                                <t t-esc="trip.description"/>
+                            </p>
+                        </t>
+                    </div>
+
+                    <!-- Share Actions -->
+                    <div class="gt-share-actions">
+                        <t t-if="is_logged_in">
+                            <form t-att-action="'/trip/shared/%s/copy' % token" method="post" style="display:inline;">
+                                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                <button type="submit" class="gt-btn gt-btn--primary">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                                    Copy This Trip
+                                </button>
+                            </form>
+                        </t>
+                        <button type="button" class="gt-btn gt-btn--secondary"
+                                onclick="navigator.clipboard.writeText(window.location.href).then(()=>alert('Link copied!'))">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                            Copy Link
+                        </button>
+                    </div>
+
+                    <hr class="gt-divider"/>
+
+                    <!-- Stops Overview -->
+                    <div class="gt-flex gt-gap-2 gt-mb-4 gt-overflow-x-auto gt-justify-center">
+                        <t t-foreach="trip.stop_ids" t-as="stop">
+                            <div class="gt-chip">
+                                📍 <t t-esc="stop.city_name"/>
+                                <span class="gt-text-small">(<t t-esc="stop.duration_days"/>d)</span>
+                            </div>
+                        </t>
+                    </div>
+
+                    <!-- Day-wise Itinerary (Read-only) -->
+                    <div class="gt-itinerary-view" style="max-width:800px;margin:0 auto;">
+                        <t t-foreach="days_data" t-as="day">
+                            <div class="gt-day-group">
+                                <div class="gt-day-header" style="position:static;">
+                                    <span>Day <t t-esc="day['day']"/></span>
+                                    <span class="gt-text-secondary">₹<t t-esc="'{:,.0f}'.format(day['total_cost'])"/></span>
+                                </div>
+                                <t t-foreach="day['activities']" t-as="sa">
+                                    <div class="gt-activity-row">
+                                        <div class="gt-activity-time">
+                                            <t t-esc="dict(sa._fields['time_slot'].selection).get(sa.time_slot, '')"/>
+                                        </div>
+                                        <div>
+                                            <div class="gt-activity-name"><t t-esc="sa.activity_name"/></div>
+                                            <div class="gt-text-small gt-text-muted">
+                                                <t t-esc="dict(sa.activity_id._fields['category'].selection).get(sa.activity_category, '')"/>
+                                                · <t t-esc="sa.activity_duration"/>h
+                                                · 📍 <t t-esc="sa.stop_id.city_name"/>
+                                            </div>
+                                        </div>
+                                        <div class="gt-activity-cost">₹<t t-esc="'{:,.0f}'.format(sa.final_cost)"/></div>
+                                    </div>
+                                </t>
+                            </div>
+                        </t>
+                    </div>
+
+                    <!-- Total Summary -->
+                    <div class="gt-text-center gt-mt-6 gt-mb-6">
+                        <div class="gt-budget-stat-card gt-budget-stat--primary" style="display:inline-block;padding:24px 48px;">
+                            <div class="gt-budget-stat-value">₹<t t-esc="'{:,.0f}'.format(trip.total_budget)"/></div>
+                            <div class="gt-budget-stat-label">Estimated Total Cost</div>
+                        </div>
+                    </div>
+
+                    <!-- View Count -->
+                    <p class="gt-text-center gt-text-small gt-text-muted gt-mb-6">
+                        👁️ <t t-esc="share_link.view_count"/> views
+                    </p>
+
+                    <!-- Footer CTA -->
+                    <div class="gt-text-center gt-mb-6">
+                        <p class="gt-text-muted gt-mb-2">Want to plan your own trip?</p>
+                        <a href="/globetrotter" class="gt-btn gt-btn--primary gt-btn--lg">
+                            Start Planning with GlobeTrotter
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <!-- ================================================================== -->
+    <!-- Shared Trip — Not Found                                             -->
+    <!-- ================================================================== -->
+    <template id="gt_shared_not_found" name="Shared Trip Not Found">
+        <t t-call="portal.frontend_layout">
+            <div class="gt-page">
+                <div class="gt-container">
+                    <div class="gt-empty-state" style="min-height:60vh;">
+                        <svg class="gt-empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                        <h3 class="gt-empty-state-title">Trip Not Found</h3>
+                        <p class="gt-empty-state-message">This shared trip link is invalid or has been deactivated.</p>
+                        <a href="/globetrotter" class="gt-btn gt-btn--primary">Go to GlobeTrotter</a>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>

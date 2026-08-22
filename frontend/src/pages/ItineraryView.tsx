@@ -1,14 +1,29 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import { format } from 'date-fns';
-import { Map, Calendar, Plus, Clock, ExternalLink, DollarSign, ArrowRight, Share2, Wallet, Trash2, MapPin } from 'lucide-react';
+import { Map, Calendar, Plus, Clock, ExternalLink, DollarSign, ArrowRight, Share2, Wallet, Trash2, MapPin, Edit2, X, Check, Download } from 'lucide-react';
 import { toast } from 'react-toastify';
+import { useReactToPrint } from 'react-to-print';
+import TripPDFDocument from '../components/TripPDFDocument';
 
 export default function ItineraryView() {
   const { id } = useParams<{ id: string }>();
   const [trip, setTrip] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+
+  // Edit states
+  const [editingStop, setEditingStop] = useState<string | null>(null);
+  const [stopDates, setStopDates] = useState({ start_date: '', end_date: '' });
+
+  const [editingActivity, setEditingActivity] = useState<string | null>(null);
+  const [activityTime, setActivityTime] = useState({ date: '', time: '' });
+
+  const printRef = useRef<HTMLDivElement>(null);
+  const handlePrint = useReactToPrint({ 
+    contentRef: printRef,
+    documentTitle: `${trip?.name || 'Trip'}_Itinerary`
+  });
 
   const fetchTrip = async () => {
     try {
@@ -25,8 +40,47 @@ export default function ItineraryView() {
     fetchTrip();
   }, [id]);
 
+  const handleDeleteStop = async (stopId: string) => {
+    if (!window.confirm("Delete this destination? All planned activities within it will also be removed.")) return;
+    try {
+      await axios.delete(`http://localhost:5000/api/trips/${id}/stops/${stopId}`);
+      toast.success('Destination deleted');
+      fetchTrip();
+    } catch (error) {
+      toast.error('Failed to delete destination');
+    }
+  };
+
+  const handleUpdateStopDates = async (stopId: string) => {
+    try {
+      await axios.put(`http://localhost:5000/api/trips/${id}/stops/${stopId}`, {
+        start_date: new Date(stopDates.start_date).toISOString(),
+        end_date: new Date(stopDates.end_date).toISOString()
+      });
+      toast.success('Dates updated');
+      setEditingStop(null);
+      fetchTrip();
+    } catch (error) {
+      toast.error('Failed to update dates');
+    }
+  };
+
+  const handleUpdateActivityTime = async (stopId: string, tripActivityId: string) => {
+    try {
+      await axios.put(`http://localhost:5000/api/trips/${id}/stops/${stopId}/activities/${tripActivityId}`, {
+        scheduled_date: activityTime.date ? new Date(activityTime.date).toISOString() : null,
+        scheduled_time: activityTime.time || null
+      });
+      toast.success('Activity time updated');
+      setEditingActivity(null);
+      fetchTrip();
+    } catch (error) {
+      toast.error('Failed to update activity time');
+    }
+  };
+
   const handleRemoveActivity = async (stopId: string, tripActivityId: string) => {
-    if (!window.confirm("Remove this activity from your itinerary? Note: This won't auto-delete its associated budget item if one was generated.")) return;
+    if (!window.confirm("Remove this activity from your itinerary?")) return;
     try {
       await axios.delete(`http://localhost:5000/api/trips/${id}/stops/${stopId}/activities/${tripActivityId}`);
       toast.success('Activity removed');
@@ -38,21 +92,26 @@ export default function ItineraryView() {
 
   if (loading) {
     return (
-      <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
-        <div className="h-64 bg-slate-200 rounded-2xl animate-pulse"></div>
-        <div className="h-8 bg-slate-200 rounded w-1/4 animate-pulse"></div>
+      <div className="max-w-4xl mx-auto p-8 animate-pulse">
+        <div className="h-64 bg-slate-200 rounded-3xl mb-8" />
         <div className="space-y-4">
-           <div className="h-32 bg-slate-200 rounded-2xl animate-pulse"></div>
-           <div className="h-32 bg-slate-200 rounded-2xl animate-pulse"></div>
+          <div className="h-8 bg-slate-200 rounded w-1/3" />
+          <div className="h-4 bg-slate-200 rounded w-1/4" />
         </div>
       </div>
     );
   }
 
-  if (!trip) return <div className="text-center py-20 text-red-500 font-medium">Trip not found</div>;
+  if (!trip) {
+    return <div className="text-center py-20 text-slate-500">Trip not found</div>;
+  }
 
   return (
     <div className="pb-16">
+      <div style={{ display: 'none' }}>
+        <TripPDFDocument trip={trip} ref={printRef} />
+      </div>
+
       {/* Hero Header */}
       <div className="relative bg-slate-900 h-64 sm:h-80">
         {trip.cover_photo_url && (
@@ -73,7 +132,10 @@ export default function ItineraryView() {
                 {format(new Date(trip.start_date), 'MMM d, yyyy')} - {format(new Date(trip.end_date), 'MMM d, yyyy')}
               </p>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3">
+              <button onClick={() => handlePrint()} className="inline-flex items-center px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg text-sm font-semibold backdrop-blur-sm transition-colors border border-white/10">
+                <Download className="h-4 w-4 mr-2" /> PDF
+              </button>
               <Link to={`/trips/${id}/calendar`} className="inline-flex items-center px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg text-sm font-semibold backdrop-blur-sm transition-colors border border-white/10">
                 <Calendar className="h-4 w-4 mr-2" /> Calendar
               </Link>
@@ -113,7 +175,7 @@ export default function ItineraryView() {
             </div>
           ) : (
             trip.stops?.map((stop: any, index: number) => (
-              <div key={stop.id} className="relative z-10 group">
+              <div key={stop.id} className="relative z-10 group/stop">
                 
                 {/* Timeline Marker */}
                 <div className="hidden md:flex items-center justify-center absolute left-1/2 -translate-x-1/2 top-4 w-10 h-10 rounded-full bg-indigo-100 border-4 border-white shadow-sm text-indigo-600 font-bold z-20">
@@ -131,19 +193,64 @@ export default function ItineraryView() {
                   <div className={`ml-10 md:ml-0 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-shadow ${index % 2 === 0 ? 'md:col-start-1 md:mr-12' : 'md:col-start-2 md:ml-12'}`}>
                     
                     {/* Stop Header */}
-                    <div className="border-b border-slate-100 px-6 py-5 bg-slate-50 flex items-center justify-between">
+                    <div className="border-b border-slate-100 px-6 py-5 bg-slate-50 flex flex-col justify-between relative">
+                      <div className="absolute top-4 right-4 flex items-center gap-2 opacity-0 group-hover/stop:opacity-100 transition-opacity">
+                        <button 
+                          onClick={() => handleDeleteStop(stop.id)}
+                          className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          title="Delete destination"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+
                       <div>
-                        <h3 className="text-xl font-bold text-slate-900 flex items-center">
+                        <h3 className="text-xl font-bold text-slate-900 flex items-center pr-12">
                           <span className="md:hidden inline-flex items-center justify-center w-6 h-6 mr-2 rounded-full bg-indigo-100 text-indigo-600 text-xs font-bold">{index + 1}</span>
                           {stop.city.name}, {stop.city.country}
                         </h3>
-                        <p className="text-sm font-medium text-slate-500 mt-1">
-                          {format(new Date(stop.start_date), 'MMM d')} - {format(new Date(stop.end_date), 'MMM d, yyyy')}
-                        </p>
+                        
+                        {editingStop === stop.id ? (
+                          <div className="mt-3 flex flex-wrap gap-2 items-center bg-white p-2 rounded-lg border border-indigo-100">
+                            <input 
+                              type="date" 
+                              value={stopDates.start_date}
+                              onChange={e => setStopDates({...stopDates, start_date: e.target.value})}
+                              className="text-xs border-slate-300 rounded focus:ring-indigo-500 py-1"
+                            />
+                            <span className="text-slate-400 text-xs">to</span>
+                            <input 
+                              type="date" 
+                              value={stopDates.end_date}
+                              min={stopDates.start_date}
+                              onChange={e => setStopDates({...stopDates, end_date: e.target.value})}
+                              className="text-xs border-slate-300 rounded focus:ring-indigo-500 py-1"
+                            />
+                            <div className="flex gap-1 ml-auto">
+                              <button onClick={() => handleUpdateStopDates(stop.id)} className="p-1 bg-indigo-100 text-indigo-700 rounded hover:bg-indigo-200"><Check className="h-3 w-3" /></button>
+                              <button onClick={() => setEditingStop(null)} className="p-1 bg-slate-100 text-slate-600 rounded hover:bg-slate-200"><X className="h-3 w-3" /></button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex items-center mt-1 group/date cursor-pointer" onClick={() => {
+                            setEditingStop(stop.id);
+                            setStopDates({
+                              start_date: new Date(stop.start_date).toISOString().split('T')[0],
+                              end_date: new Date(stop.end_date).toISOString().split('T')[0]
+                            });
+                          }}>
+                            <p className="text-sm font-medium text-slate-500 hover:text-indigo-600 transition-colors">
+                              {format(new Date(stop.start_date), 'MMM d')} - {format(new Date(stop.end_date), 'MMM d, yyyy')}
+                            </p>
+                            <Edit2 className="h-3 w-3 ml-2 text-slate-300 group-hover/date:text-indigo-400" />
+                          </div>
+                        )}
                       </div>
-                      <Link to={`/trips/${id}/stops/${stop.id}/activities`} className="text-indigo-600 hover:text-indigo-700 bg-indigo-50 hover:bg-indigo-100 p-2 rounded-lg transition-colors">
-                        <Plus className="h-5 w-5" />
-                      </Link>
+                      <div className="mt-4">
+                        <Link to={`/trips/${id}/stops/${stop.id}/activities`} className="inline-flex items-center text-xs font-semibold text-indigo-600 hover:text-indigo-700 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg transition-colors">
+                          <Plus className="h-4 w-4 mr-1" /> Add Activity
+                        </Link>
+                      </div>
                     </div>
                     
                     {/* Activities List */}
@@ -155,14 +262,63 @@ export default function ItineraryView() {
                           {stop.activities.map((tripActivity: any) => (
                             <li key={tripActivity.id} className="flex gap-4 group/item">
                               <img className="h-14 w-14 rounded-xl object-cover bg-slate-100 shadow-sm" src={tripActivity.activity.image_url} alt="" onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/100x100?text=N/A' }} />
-                              <div className="flex-1">
+                              <div className="flex-1 min-w-0">
                                 <div className="flex items-start justify-between">
-                                  <h4 className="text-sm font-bold text-slate-900">{tripActivity.activity.name}</h4>
-                                  <button onClick={() => handleRemoveActivity(stop.id, tripActivity.id)} className="text-slate-400 hover:text-red-500 opacity-0 group-hover/item:opacity-100 transition-opacity" title="Remove activity">
+                                  <h4 className="text-sm font-bold text-slate-900 truncate pr-2">{tripActivity.activity.name}</h4>
+                                  <button onClick={() => handleRemoveActivity(stop.id, tripActivity.id)} className="text-slate-400 hover:text-red-500 opacity-0 group-hover/item:opacity-100 transition-opacity flex-shrink-0" title="Remove activity">
                                     <Trash2 className="h-4 w-4" />
                                   </button>
                                 </div>
-                                <div className="flex items-center gap-2 mt-1">
+                                
+                                {editingActivity === tripActivity.id ? (
+                                  <div className="mt-2 flex flex-wrap gap-2 items-center bg-slate-50 p-2 rounded-lg border border-slate-200">
+                                    <input 
+                                      type="date" 
+                                      value={activityTime.date}
+                                      min={new Date(stop.start_date).toISOString().split('T')[0]}
+                                      max={new Date(stop.end_date).toISOString().split('T')[0]}
+                                      onChange={e => setActivityTime({...activityTime, date: e.target.value})}
+                                      className="text-xs border-slate-300 rounded focus:ring-indigo-500 py-1 w-28"
+                                    />
+                                    <input 
+                                      type="time" 
+                                      value={activityTime.time}
+                                      onChange={e => setActivityTime({...activityTime, time: e.target.value})}
+                                      className="text-xs border-slate-300 rounded focus:ring-indigo-500 py-1 w-24"
+                                    />
+                                    <div className="flex gap-1 ml-auto">
+                                      <button onClick={() => handleUpdateActivityTime(stop.id, tripActivity.id)} className="p-1 bg-indigo-100 text-indigo-700 rounded hover:bg-indigo-200"><Check className="h-3 w-3" /></button>
+                                      <button onClick={() => setEditingActivity(null)} className="p-1 bg-slate-200 text-slate-600 rounded hover:bg-slate-300"><X className="h-3 w-3" /></button>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <div 
+                                    className="flex items-center gap-2 mt-1 group/actdate cursor-pointer"
+                                    onClick={() => {
+                                      setEditingActivity(tripActivity.id);
+                                      setActivityTime({
+                                        date: tripActivity.scheduled_date ? new Date(tripActivity.scheduled_date).toISOString().split('T')[0] : '',
+                                        time: tripActivity.scheduled_time || ''
+                                      });
+                                    }}
+                                  >
+                                    {(tripActivity.scheduled_date || tripActivity.scheduled_time) ? (
+                                      <span className="text-xs font-medium text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded flex items-center hover:bg-indigo-100 transition-colors">
+                                        <Calendar className="h-3 w-3 mr-1" />
+                                        {tripActivity.scheduled_date && format(new Date(tripActivity.scheduled_date), 'MMM d')}
+                                        {tripActivity.scheduled_date && tripActivity.scheduled_time && ', '}
+                                        {tripActivity.scheduled_time}
+                                        <Edit2 className="h-2.5 w-2.5 ml-1.5 opacity-0 group-hover/actdate:opacity-100" />
+                                      </span>
+                                    ) : (
+                                      <span className="text-[10px] text-slate-400 font-medium hover:text-indigo-500 flex items-center">
+                                        + Add Date/Time
+                                      </span>
+                                    )}
+                                  </div>
+                                )}
+                                
+                                <div className="flex items-center gap-2 mt-1.5">
                                   <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-600">
                                     {tripActivity.activity.category}
                                   </span>
