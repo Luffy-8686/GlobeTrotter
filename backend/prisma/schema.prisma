@@ -1,0 +1,132 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model User {
+  id                 String             @id @default(uuid())
+  name               String
+  email              String             @unique
+  password_hash      String
+  role               Role               @default(USER)
+  profile_photo_url  String?
+  language_preference String             @default("en")
+  created_at         DateTime           @default(now())
+  
+  trips              Trip[]
+  saved_destinations SavedDestination[]
+}
+
+model Trip {
+  id              String       @id @default(uuid())
+  user_id         String
+  name            String
+  description     String?
+  start_date      DateTime
+  end_date        DateTime
+  cover_photo_url String?
+  is_public       Boolean      @default(false)
+  share_slug      String?      @unique
+  created_at      DateTime     @default(now())
+  updated_at      DateTime     @updatedAt
+
+  user            User         @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  stops           Stop[]
+  budget_items    BudgetItem[]
+  
+  @@index([user_id])
+}
+
+model Stop {
+  id          String         @id @default(uuid())
+  trip_id     String
+  city_id     String
+  start_date  DateTime
+  end_date    DateTime
+  order_index Int            @default(0)
+
+  trip        Trip           @relation(fields: [trip_id], references: [id], onDelete: Cascade)
+  city        City           @relation(fields: [city_id], references: [id], onDelete: Restrict)
+  activities  TripActivity[]
+
+  @@index([trip_id])
+  @@index([city_id])
+}
+
+model City {
+  id               String   @id @default(uuid())
+  name             String
+  country          String
+  region           String?
+  cost_index       Int      // e.g., 1 to 5
+  popularity_score Int      // e.g., 1 to 100
+  image_url        String?
+
+  stops              Stop[]
+  activities         Activity[]
+  saved_destinations SavedDestination[]
+}
+
+model Activity {
+  id               String   @id @default(uuid())
+  city_id          String
+  name             String
+  description      String?
+  category         String   // e.g., "Sightseeing", "Food", "Adventure"
+  cost             Float    @default(0)
+  duration_minutes Int      @default(60)
+  image_url        String?
+
+  city             City           @relation(fields: [city_id], references: [id], onDelete: Cascade)
+  trip_activities  TripActivity[]
+  
+  @@index([city_id])
+}
+
+model TripActivity {
+  id             String   @id @default(uuid())
+  stop_id        String
+  activity_id    String
+  scheduled_date DateTime?
+  scheduled_time String?  // e.g., "14:00"
+  cost_override  Float?
+
+  stop           Stop     @relation(fields: [stop_id], references: [id], onDelete: Cascade)
+  activity       Activity @relation(fields: [activity_id], references: [id], onDelete: Restrict)
+  
+  @@index([stop_id])
+  @@index([activity_id])
+}
+
+model BudgetItem {
+  id       String   @id @default(uuid())
+  trip_id  String
+  category String   // transport, stay, activities, meals
+  amount   Float
+  date     DateTime?
+  
+  trip     Trip     @relation(fields: [trip_id], references: [id], onDelete: Cascade)
+  
+  @@index([trip_id])
+}
+
+model SavedDestination {
+  id       String @id @default(uuid())
+  user_id  String
+  city_id  String
+
+  user     User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  city     City   @relation(fields: [city_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, city_id])
+}
