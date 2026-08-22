@@ -6,7 +6,7 @@ GlobeTrotter is a personalized, intelligent, and collaborative platform that tra
  
 ---
  
-## ✨ Features
+## Features
  
 - **Multi-city itinerary builder** — add stops, assign travel dates, and reorder cities
 - **City & activity search** — discover destinations and experiences by cost, popularity, and category
@@ -18,7 +18,7 @@ GlobeTrotter is a personalized, intelligent, and collaborative platform that tra
 - **Fully responsive UI** — no overlapping layouts across mobile, tablet, and desktop
 ---
  
-## 🖥️ Screens
+## Screens
  
 | # | Screen | Purpose |
 |---|--------|---------|
@@ -38,7 +38,7 @@ GlobeTrotter is a personalized, intelligent, and collaborative platform that tra
  
 ---
  
-## 🛠️ Tech Stack
+## Tech Stack
  
 - **Frontend:** React (Vite), TypeScript, React Router, Tailwind CSS
 - **Backend:** Node.js, Express, TypeScript
@@ -51,7 +51,7 @@ GlobeTrotter is a personalized, intelligent, and collaborative platform that tra
 - **Notifications:** react-toastify
 ---
  
-## 🗄️ Database Schema (core entities)
+## Database Schema (core entities)
  
 - `User` — id, name, email, password_hash, profile_photo_url, language_preference, **role** (`USER` | `ADMIN`, default `USER`)
 - `Trip` — id, user_id, name, description, start_date, end_date, cover_photo_url, is_public, share_slug
@@ -63,7 +63,7 @@ GlobeTrotter is a personalized, intelligent, and collaborative platform that tra
 - `SavedDestination` — id, user_id, city_id
 ---
  
-## 🚀 Getting Started
+## Getting Started
  
 ### Prerequisites
 - Node.js (v18+)
@@ -120,7 +120,7 @@ This starts both the backend (`http://localhost:5000`) and frontend (`http://loc
  
 ---
  
-## 📱 Responsive Design
+## Responsive Design
  
 GlobeTrotter is built mobile-first and tested across breakpoints (320px, 375px, 768px, 1024px, 1440px+) to ensure:
 - No overlapping or clipped UI elements at any screen size
@@ -130,7 +130,7 @@ GlobeTrotter is built mobile-first and tested across breakpoints (320px, 375px, 
 - Responsive `react-big-calendar` and chart views (agenda/list reflow on small screens)
 ---
  
-## 🔒 Security & Validation
+## Security & Validation
  
 - Passwords hashed with `bcryptjs`
 - JWT-based auth with role-based access control for admin routes
@@ -140,7 +140,7 @@ GlobeTrotter is built mobile-first and tested across breakpoints (320px, 375px, 
 - Centralized error-handling middleware — no stack traces exposed to the client
 ---
  
-## 📁 Project Structure
+## Project Structure
  
 \`\`\`
 globetrotter/
@@ -168,7 +168,7 @@ globetrotter/
  
 ---
  
-## ✅ Verification Checklist
+## Verification Checklist
  
 - [ ] `npm run install:all` completes without errors
 - [ ] `.env` filled with valid Supabase credentials
@@ -181,10 +181,10 @@ globetrotter/
 - [ ] No overlapping elements at 320px, 375px, 768px, 1024px, 1440px+
 ---
  
-## 🤝 Contributing
+## Contributing
  
 This project was built as part of a hackathon. Contributions, issues, and feature requests are welcome.
  
-## 📄 License
+## License
  
 This project is for educational/hackathon purposes.
