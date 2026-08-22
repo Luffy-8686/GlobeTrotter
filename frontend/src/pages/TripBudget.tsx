@@ -103,8 +103,8 @@ export default function TripBudget() {
     }],
   };
 
-  const dailyThreshold = 200; // configurable threshold
-  const overBudgetDays = Object.entries(dailySpend).filter(([_, amount]) => amount > dailyThreshold);
+  const dailyThreshold = 300; // configurable threshold
+  const isOverBudget = perDayAverage > dailyThreshold;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
@@ -176,20 +176,20 @@ export default function TripBudget() {
              <span className="text-sm text-slate-500 mb-1">/ day</span>
           </div>
         </div>
-        <div className={`p-6 rounded-2xl shadow-sm border ${overBudgetDays.length > 0 ? 'bg-amber-50 border-amber-200' : 'bg-emerald-50 border-emerald-200'}`}>
-           <h2 className={`text-sm font-semibold uppercase tracking-wider mb-2 ${overBudgetDays.length > 0 ? 'text-amber-700' : 'text-emerald-700'}`}>
+        <div className={`p-6 rounded-2xl shadow-sm border ${isOverBudget ? 'bg-amber-50 border-amber-200' : 'bg-emerald-50 border-emerald-200'}`}>
+           <h2 className={`text-sm font-semibold uppercase tracking-wider mb-2 ${isOverBudget ? 'text-amber-700' : 'text-emerald-700'}`}>
               Budget Health
            </h2>
-           {overBudgetDays.length > 0 ? (
+           {isOverBudget ? (
              <div className="flex items-start gap-3">
                <AlertTriangle className="h-6 w-6 text-amber-600 flex-shrink-0 mt-0.5" />
                <p className="text-sm text-amber-800 font-medium">
-                 {overBudgetDays.length} day(s) exceed the ${dailyThreshold} daily threshold limit. Consider adjusting your itinerary.
+                 Your daily average (${perDayAverage.toFixed(0)}) exceeds your threshold of ${dailyThreshold}. Consider adjusting your itinerary.
                </p>
              </div>
            ) : (
              <p className="text-sm text-emerald-800 font-medium">
-               Your trip looks great! Daily spending is well balanced below ${dailyThreshold}.
+               Your trip looks great! Your average daily spending is well balanced below ${dailyThreshold}.
              </p>
            )}
         </div>

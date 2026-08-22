@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import { format } from 'date-fns';
 import { Map, Calendar, Plus, Clock, ExternalLink, DollarSign, ArrowRight, Share2, Wallet, Trash2, MapPin } from 'lucide-react';
+import { toast } from 'react-toastify';
 
 export default function ItineraryView() {
   const { id } = useParams<{ id: string }>();
@@ -23,6 +24,17 @@ export default function ItineraryView() {
   useEffect(() => {
     fetchTrip();
   }, [id]);
+
+  const handleRemoveActivity = async (stopId: string, tripActivityId: string) => {
+    if (!window.confirm("Remove this activity from your itinerary? Note: This won't auto-delete its associated budget item if one was generated.")) return;
+    try {
+      await axios.delete(`http://localhost:5000/api/trips/${id}/stops/${stopId}/activities/${tripActivityId}`);
+      toast.success('Activity removed');
+      fetchTrip();
+    } catch (error) {
+      toast.error('Failed to remove activity');
+    }
+  };
 
   if (loading) {
     return (
@@ -141,10 +153,15 @@ export default function ItineraryView() {
                       ) : (
                         <ul className="space-y-4">
                           {stop.activities.map((tripActivity: any) => (
-                            <li key={tripActivity.id} className="flex gap-4">
+                            <li key={tripActivity.id} className="flex gap-4 group/item">
                               <img className="h-14 w-14 rounded-xl object-cover bg-slate-100 shadow-sm" src={tripActivity.activity.image_url} alt="" onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/100x100?text=N/A' }} />
                               <div className="flex-1">
-                                <h4 className="text-sm font-bold text-slate-900">{tripActivity.activity.name}</h4>
+                                <div className="flex items-start justify-between">
+                                  <h4 className="text-sm font-bold text-slate-900">{tripActivity.activity.name}</h4>
+                                  <button onClick={() => handleRemoveActivity(stop.id, tripActivity.id)} className="text-slate-400 hover:text-red-500 opacity-0 group-hover/item:opacity-100 transition-opacity" title="Remove activity">
+                                    <Trash2 className="h-4 w-4" />
+                                  </button>
+                                </div>
                                 <div className="flex items-center gap-2 mt-1">
                                   <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-600">
                                     {tripActivity.activity.category}

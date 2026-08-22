@@ -235,6 +235,18 @@ router.post('/:id/stops/:stopId/activities', authenticate, validateRequest(activ
   }
 });
 
+router.delete('/:id/stops/:stopId/activities/:tripActivityId', authenticate, async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const { tripActivityId } = req.params;
+    await prisma.tripActivity.delete({
+      where: { id: tripActivityId }
+    });
+    res.json({ message: 'Activity removed from itinerary' });
+  } catch (error) {
+    next(error);
+  }
+});
+
 // Budget CRUD
 const budgetSchema = z.object({
   body: z.object({
